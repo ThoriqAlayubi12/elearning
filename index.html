@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Safety Adventure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: sticky indigo top bar; home = illustrated Nusantara sea map as hero, then module list and character cards; module = tab stepper over one stage, Kancil guide pinned bottom-left */
+  --ink:#1c2147;
+  --indigo:#2a3990;
+  --sea:#1f2f6e;
+  --kunyit:#f6b21b;
+  --daun:#23935f;
+  --sirih:#d9434f;
+  --paper:#f7f8fc;
+  --line:#d9dcee;
+  --muted:#565c82;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Andika","Segoe UI",system-ui,sans-serif;
+  --r:18px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.1;margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;cursor:pointer;color:inherit}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--kunyit);outline-offset:3px;border-radius:6px}
+svg text{font-family:var(--display)}
+.idh{display:none;color:#6a4a00;font-size:.88em;font-style:italic;margin-top:4px}
+.help-on .idh{display:block}
+.help-on span.idh{display:inline}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:30;background:var(--indigo);color:#fff;border-bottom:4px solid var(--kunyit)}
+.topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:10px 20px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:22px;text-decoration:none;color:#fff;white-space:nowrap}
+.brand svg{width:40px;height:40px}
+.top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill-btn{border:2px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:999px;padding:5px 14px;font-weight:700;font-size:15px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.pill-btn svg{width:18px;height:18px}
+.pill-btn[aria-pressed="true"]{background:var(--kunyit);color:var(--ink);border-color:var(--kunyit)}
+.star-total{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:800;font-size:20px;background:rgba(255,255,255,.12);border-radius:999px;padding:3px 14px 3px 8px;font-variant-numeric:tabular-nums}
+.star-total svg{width:24px;height:24px}
+@media (max-width:640px){.brand span{display:none}.pill-btn .lbl{display:none}.topbar-inner{padding:8px 12px}}
+
+/* home */
+.hero{background:var(--sea);color:#fff;padding:28px 20px 8px}
+.hero-inner{max-width:1180px;margin:0 auto}
+.eyebrow{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:#c8cff6}
+.hero h1{font-size:clamp(36px,5.4vw,64px);font-weight:800;margin-top:6px}
+.hero h1 em{font-style:normal;color:var(--kunyit)}
+.hero .lead{max-width:62ch;margin-top:8px;font-size:19px;color:#e7eafb}
+.hero .lead.idh{color:#ffe7a6}
+.map-wrap{margin:14px -8px 0}
+.map-wrap svg{width:100%;height:auto;display:block}
+.pin{cursor:pointer}
+.pin:focus{outline:none}
+.pin:focus-visible circle.ring{stroke:var(--kunyit);stroke-width:7}
+.pin-num{font-weight:800;font-size:30px;fill:var(--ink)}
+.pin.soon .pin-num,.pin.locked .pin-num{fill:#3b416b}
+.pin-label{font-family:var(--body);font-size:14px;font-weight:700;fill:#fff}
+.pin.open circle.ring{animation:pulse 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.bob{animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-2deg)}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:32px 20px 56px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sec-head h2{font-size:32px;font-weight:800}
+.sec-head p{color:var(--muted)}
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.mod-card{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:16px;border:2px solid var(--line);border-radius:var(--r);background:#fff;text-decoration:none;color:inherit;text-align:left;align-items:start;width:100%}
+.mod-card.open{border-color:var(--ink);box-shadow:0 5px 0 var(--ink)}
+.mod-card.open:hover{transform:translateY(-2px)}
+.mod-num{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:30px;background:var(--kunyit);color:var(--ink);border:3px solid var(--ink)}
+.mod-card.soon .mod-num,.mod-card.locked .mod-num{background:#e4e6f2;color:#7d83a8;border-color:#c5c9df}
+.mod-card h3{font-size:22px;font-weight:800}
+.mod-meta{font-size:14px;color:var(--muted);margin-top:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;background:#eef0fb;color:var(--indigo)}
+.chip.done{background:#dff3e8;color:#145c3a}
+.chip.soon{background:#efeff3;color:#5d6074}
+.chip svg{width:14px;height:14px}
+
+.team{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.member{background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:12px 14px 16px;text-align:center}
+.member svg{height:190px;width:auto;max-width:100%;display:block;margin:0 auto}
+.member h3{font-size:24px;font-weight:800;margin-top:4px}
+.member p{font-size:15px;color:var(--muted)}
+.foot{border-top:2px solid var(--line);margin-top:40px;padding-top:18px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:15px;color:var(--muted)}
+.link-btn{background:none;border:0;text-decoration:underline;color:var(--indigo);font-weight:700;padding:0}
+
+/* module */
+.mod-head{background:var(--indigo);color:#fff;padding:14px 20px 0}
+.mod-head-inner{max-width:1180px;margin:0 auto}
+.crumb{color:#d4d9fa;text-decoration:none;font-weight:700;font-size:16px}
+.crumb:hover{text-decoration:underline}
+.title-row{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end;justify-content:space-between;margin-top:8px}
+.title-row h1{font-size:clamp(28px,4vw,42px);font-weight:800}
+.head-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.timer{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:999px;padding:4px 6px 4px 14px;font-variant-numeric:tabular-nums}
+.timer .t{font-family:var(--display);font-weight:800;font-size:22px;min-width:3.2ch}
+.timer .t-lbl{font-size:13px;color:#c8cff6}
+.timer.late .t{color:#ffb4ba}
+.timer button{border:0;background:#fff;color:var(--ink);border-radius:999px;font-size:13px;font-weight:700;padding:4px 12px}
+.steps{display:flex;gap:6px;margin-top:16px;overflow-x:auto;scrollbar-width:none}
+.step-tab{flex:none;background:rgba(255,255,255,.1);color:#fff;border:0;border-radius:14px 14px 0 0;padding:9px 16px 8px;font-weight:700;text-align:left;font-size:16px;line-height:1.2}
+.step-tab .min{display:block;font-size:12px;font-weight:400;opacity:.8}
+.step-tab[aria-selected="true"]{background:var(--paper);color:var(--ink)}
+.step-tab .tick{display:none;color:#8fe0b4;margin-left:4px}
+.step-tab.done .tick{display:inline}
+.step-tab[aria-selected="true"] .tick{color:var(--daun)}
+.stage{max-width:1180px;margin:0 auto;padding:26px 20px 150px}
+.step-intro{margin-bottom:18px;max-width:70ch}
+.step-intro h2{font-size:32px;font-weight:800}
+.step-intro p{margin-top:4px;color:var(--muted)}
+.sub-h{font-size:24px;font-weight:800;margin:32px 0 6px}
+
+/* buttons */
+.btn{text-decoration:none;border:0;border-radius:14px;padding:11px 20px;font-family:var(--display);font-weight:700;font-size:20px;background:var(--kunyit);color:var(--ink);box-shadow:0 4px 0 #a87500;display:inline-flex;align-items:center;gap:8px;line-height:1.1}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a87500}
+.btn.sec{background:#fff;border:2px solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+.btn.sec:active{box-shadow:0 1px 0 var(--ink)}
+.btn.sm{font-size:16px;padding:7px 14px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn svg{width:22px;height:22px}
+.next-bar{display:flex;justify-content:flex-end;gap:12px;margin-top:28px;flex-wrap:wrap;align-items:center}
+.next-bar .hint{color:var(--muted);font-size:15px}
+
+/* story */
+.story{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.story{grid-template-columns:1fr}}
+.panel{border:3px solid var(--ink);border-radius:var(--r);overflow:hidden;background:#fff;box-shadow:6px 6px 0 var(--ink)}
+.panel svg{display:block;width:100%;height:auto}
+.panel-count{font-family:var(--display);font-weight:700;color:var(--muted);font-size:16px}
+.story-text{font-size:23px;line-height:1.6;margin:8px 0 6px}
+.vw{border:0;padding:0 2px;font:inherit;background:linear-gradient(transparent 58%,#ffd977 58%);border-radius:2px}
+.vw:hover{background:#ffd977}
+.word-spot{display:flex;gap:12px;align-items:center;background:#fff;border:2px dashed var(--line);border-radius:14px;padding:10px 12px;margin-top:12px;min-height:72px;font-size:16px;color:var(--muted)}
+.word-spot svg{width:52px;height:52px;flex:none}
+.word-spot b{font-family:var(--display);font-size:24px;color:var(--ink);display:block;line-height:1.1}
+.story-nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.dots{display:flex;gap:6px;margin-top:12px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--ink)}
+
+/* questions */
+.q{margin:14px 0;padding:18px;border:2px solid var(--line);border-radius:var(--r);background:#fff}
+.q h4{font-size:22px;font-weight:700;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.q .qnum{color:var(--muted);font-size:15px;font-family:var(--body);font-weight:700}
+.opts{display:grid;gap:10px;margin-top:12px}
+.opts.row{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;padding:11px 14px;border:2px solid var(--line);border-radius:14px;background:#fff;font-size:19px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt .k{width:34px;height:34px;border-radius:50%;background:#eef0fb;display:grid;place-items:center;font-weight:700;flex:none;font-family:var(--display)}
+.opt.right{border-color:var(--daun);background:#e3f5ec}
+.opt.right .k{background:var(--daun);color:#fff}
+.opt.wrong{border-color:var(--sirih);background:#fdeced;animation:shake .4s}
+.opt:disabled{cursor:default}
+.opt.wrong:disabled{opacity:.7}
+.fb{margin-top:12px;font-weight:700;border-radius:12px;padding:10px 14px;font-size:17px}
+.fb.good{background:#e3f5ec;color:#145c3a}
+.fb.try{background:#fff2d1;color:#714d00}
+.spk{flex:none;width:42px;height:42px;border-radius:50%;border:2px solid var(--ink);background:#fff;display:grid;place-items:center;padding:0}
+.spk svg{width:22px;height:22px}
+.spk:active{background:var(--kunyit)}
+.blank{display:inline-block;min-width:110px;border-bottom:4px solid var(--ink);text-align:center;font-weight:700;color:var(--indigo)}
+.blank.filled{color:var(--daun);border-color:var(--daun)}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* vocab */
+.vocab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px}
+.vcard{border:2px solid var(--ink);border-radius:var(--r);background:#fff;padding:14px 10px;text-align:center;box-shadow:0 4px 0 var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px}
+.vcard:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.vcard svg{width:76px;height:76px}
+.vcard .w{font-family:var(--display);font-size:24px;font-weight:800;line-height:1.1}
+.vcard .ex{font-size:15px;color:var(--muted)}
+.vcard.seen{border-color:var(--daun);box-shadow:0 4px 0 var(--daun)}
+.pattern-box{display:grid;gap:8px;background:#fff;border-left:6px solid var(--kunyit);border-radius:0 14px 14px 0;padding:14px 18px;margin-top:8px}
+.pattern-box p{font-size:20px}
+.pattern-box b{color:var(--indigo)}
+.builder{background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:18px;margin-top:10px}
+.b-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.b-head .count{color:var(--muted);font-weight:700;font-size:15px}
+.slot-row{min-height:64px;border:3px dashed #b6bad6;border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.slot-row.ok{border-color:var(--daun);border-style:solid;background:#eef9f3}
+.slot-row.bad{animation:shake .4s;border-color:var(--sirih)}
+.tile-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;min-height:52px}
+.tile{border:2px solid var(--ink);background:#fff7de;border-radius:10px;padding:6px 16px;font-weight:700;font-size:21px;box-shadow:0 3px 0 var(--ink)}
+.tile:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.b-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+/* game */
+.game-score{display:flex;gap:14px;align-items:center;margin-bottom:16px;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{flex:1;max-width:420px;height:16px;border-radius:999px;background:#e4e6f2;overflow:hidden;border:2px solid var(--ink)}
+.bar span{display:block;height:100%;width:0;background:var(--daun);transition:width .4s}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.zone{border:3px solid var(--ink);border-radius:22px;padding:14px;min-height:230px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;transition:transform .15s, box-shadow .15s}
+.zone svg.zi{width:78px;height:78px}
+.zone h3{font-size:26px;font-weight:800}
+.zone .zs{font-size:15px;color:var(--muted)}
+.zone.vault{background:#e7eafb}
+.zone.share{background:#e2f4ea}
+.zone.hot{transform:scale(1.03);box-shadow:0 0 0 6px var(--kunyit)}
+.zone.flash{animation:flash .6s}
+@keyframes flash{40%{box-shadow:0 0 0 10px rgba(35,147,95,.45)}}
+.stack{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px}
+.chipcard{display:inline-flex;gap:6px;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:2px 10px 2px 4px;font-size:14px;font-weight:700;animation:pop .35s}
+.chipcard svg{width:24px;height:24px}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+.tray{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:16px;border-radius:var(--r);background:#fff6dc;border:3px dashed #e0b14a;min-height:130px;margin-top:16px}
+.tray-empty{align-self:center;font-family:var(--display);font-size:22px;font-weight:700;color:#8a6200}
+.gcard{touch-action:none;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:4px;width:150px;padding:10px 8px;border:2px solid var(--ink);border-radius:16px;background:#fff;box-shadow:0 4px 0 var(--ink);font-weight:700;text-align:center;font-size:16px;line-height:1.2;cursor:grab;position:relative}
+.gcard svg{width:58px;height:58px;pointer-events:none}
+.gcard span{pointer-events:none}
+.gcard.sel{box-shadow:0 0 0 5px var(--kunyit),0 4px 0 var(--ink)}
+.gcard.dragging{z-index:40;cursor:grabbing;box-shadow:0 14px 24px rgba(28,33,71,.3);transition:none}
+.gcard.shake{animation:shake .4s}
+@media (max-width:560px){.zones{gap:10px}.zone{padding:10px 6px;min-height:190px}.zone h3{font-size:21px}.gcard{width:128px;font-size:15px}}
+
+/* reward */
+.reward{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+@media (max-width:820px){.reward{grid-template-columns:1fr}}
+.badge-wrap{display:grid;place-items:center}
+.badge-wrap svg{width:min(340px,80vw);height:auto}
+.stamp{animation:stamp .7s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes stamp{from{transform:scale(2) rotate(-14deg);opacity:0}to{transform:scale(1) rotate(-5deg);opacity:1}}
+.stars-row{display:flex;gap:10px;margin:14px 0}
+.stars-row svg{width:62px;height:62px}
+.star-list{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:8px}
+.star-list li{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px;font-size:17px}
+.star-list svg{width:26px;height:26px;flex:none}
+
+/* guide */
+.guide{position:fixed;left:0;right:0;bottom:0;z-index:25;background:#fff;border-top:3px solid var(--ink);box-shadow:0 -6px 18px rgba(28,33,71,.12)}
+.guide-inner{max-width:1180px;margin:0 auto;padding:6px 20px 8px;display:flex;align-items:center;gap:12px}
+.guide-inner>svg{width:84px;height:auto;flex:none}
+.bubble{flex:1;background:#fff7de;border:2px solid var(--ink);border-radius:16px 16px 16px 4px;padding:8px 10px 8px 14px;font-size:17px;display:flex;gap:10px;align-items:center;justify-content:space-between;min-height:52px}
+.bubble .spk{width:36px;height:36px}
+.bubble .spk svg{width:18px;height:18px}
+.bubble.new{animation:pop .3s}
+@media (max-width:560px){.guide-inner>svg{width:58px}.guide-inner{padding:6px 10px;gap:8px}.bubble{font-size:15px}}
+
+/* overlay */
+.overlay{position:fixed;inset:0;background:rgba(20,24,60,.55);display:grid;place-items:center;z-index:60;padding:16px}
+.sheet{background:#fff;border-radius:22px;max-width:760px;width:100%;max-height:86vh;overflow:auto;padding:24px 26px;border:3px solid var(--ink)}
+.sheet h2{font-size:30px;font-weight:800}
+.sheet h3{font-size:20px;font-weight:800;margin:18px 0 6px}
+.sheet ul,.sheet ol{margin:0;padding-left:22px}
+.sheet li{margin:3px 0}
+.sheet .close-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:16px;margin-top:10px}
+.kv dt{font-weight:700;color:var(--muted)}
+.kv dd{margin:0}
+.toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;z-index:70;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center;animation:pop .25s}
+
+/* quest */
+.qpath{background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:6px 12px;margin-bottom:18px}
+.qpath svg{width:100%;max-height:150px;display:block}
+.quest{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.quest{grid-template-columns:1fr}}
+.device{background:var(--ink);border-radius:26px;padding:14px;box-shadow:6px 6px 0 rgba(28,33,71,.25)}
+.device-bar{display:flex;align-items:center;gap:7px;color:#c8cff6;font-size:14px;font-weight:700;padding:0 6px 10px}
+.device-bar i{width:10px;height:10px;border-radius:50%;background:#d9434f;display:inline-block}
+.device-bar i+i{background:#f6b21b}.device-bar i+i+i{background:#23935f}
+.device-bar span{margin-left:6px}
+.screen{background:#eaf3ff;border-radius:16px;padding:18px;min-height:250px;display:flex;align-items:center}
+.msg{background:#fff;border-radius:16px;border:2px solid var(--ink);padding:14px 16px;animation:pop .35s;width:100%}
+.msg.glow{box-shadow:0 0 0 4px #ffe08a,0 0 26px 8px rgba(246,178,27,.55)}
+.from{display:flex;gap:10px;align-items:center}
+.avatar{width:46px;height:46px;border-radius:50%;background:#d4d8ee;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:22px;flex:none;border:2px solid var(--ink)}
+.from b{display:block;font-size:17px;overflow-wrap:anywhere;line-height:1.2}
+.from small{color:var(--muted);font-size:14px}
+.msg-text{font-size:21px;margin:12px 0 8px;line-height:1.4;font-weight:700}
+.fake-link{display:inline-block;color:#1a56d6;text-decoration:underline;font-size:17px;overflow-wrap:anywhere}
+.choices{display:grid;gap:12px}
+.choice{display:flex;gap:14px;align-items:center;text-align:left;padding:12px 16px;border:3px solid var(--ink);border-radius:18px;background:#fff;box-shadow:0 4px 0 var(--ink);font-family:var(--display);font-weight:800;font-size:23px;line-height:1.15}
+.choice svg{width:48px;height:48px;flex:none}
+.choice small{display:block;font-family:var(--body);font-weight:400;font-size:15px;color:var(--muted)}
+.choice:hover:not(:disabled){background:#fff7de}
+.choice:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.choice:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.result{border-radius:var(--r);padding:16px 18px;border:3px solid var(--ink);animation:pop .3s}
+.result.best{background:#e3f5ec}.result.safe{background:#eef0fb}.result.oops{background:#fdeced}
+.result h3{font-size:28px;font-weight:800}
+.result p{margin-top:6px;font-size:18px}
+.clues{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px}
+.clues li{display:flex;gap:8px;align-items:center;font-size:17px;background:#fff;border-radius:10px;padding:6px 10px}
+.clues svg{width:24px;height:24px;flex:none}
+.pts{display:inline-flex;gap:4px;align-items:center;margin-top:10px;font-weight:700;font-variant-numeric:tabular-nums}
+.pts svg{width:28px;height:28px}
+.glowpulse{animation:glowp 1.4s ease-in-out infinite}
+@keyframes glowp{50%{opacity:.08}}
+
+/* jump game */
+.river svg{display:block;width:100%;height:auto}
+.croc{opacity:0;pointer-events:none;transition:opacity .4s}
+.croc.show{opacity:1;pointer-events:auto;cursor:pointer}
+.croc .bd{transition:transform .7s ease-in,opacity .7s}
+.croc.sink .bd{transform:translateY(30px);opacity:0}
+.croc .sign{transition:opacity .3s}
+.croc.landed .sign{opacity:0}
+#kt{transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
+.jq{margin-top:18px}
+.jopts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media (max-width:640px){.jopts{grid-template-columns:1fr}}
+.jopt{flex-wrap:wrap}
+.pw{font-family:"Courier New",ui-monospace,monospace;font-weight:700;font-size:22px;overflow-wrap:anywhere}
+.meter{display:flex;gap:4px;align-items:center;font-size:14px;font-weight:700;width:100%;padding-left:46px}
+.meter i{width:24px;height:9px;border-radius:3px;background:#e1e3ef}
+.meter.ok i.on{background:var(--daun)}.meter.weak i.on{background:var(--sirih)}
+.meter span{margin-left:6px}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!-- shared batik patterns and gradients -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="parang" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="18" height="18" fill="#6b3a1c"/>
+      <path d="M0 9 Q4.5 2 9 9 T18 9" stroke="#f1d9a8" stroke-width="2.4" fill="none"/>
+      <circle cx="4.5" cy="15" r="1.5" fill="#d9a05b"/><circle cx="13.5" cy="15" r="1.5" fill="#d9a05b"/>
+    </pattern>
+    <pattern id="parangMom" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="20" height="20" fill="#3b2616"/>
+      <path d="M0 10 Q5 3 10 10 T20 10" stroke="#c99b5a" stroke-width="2.4" fill="none"/>
+      <circle cx="5" cy="16" r="1.6" fill="#e8c88f"/><circle cx="15" cy="16" r="1.6" fill="#e8c88f"/>
+    </pattern>
+    <pattern id="songket" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#a3182c"/>
+      <path d="M6 1 L11 6 L6 11 L1 6Z" fill="none" stroke="#f2c14e" stroke-width="1.3"/>
+      <circle cx="6" cy="6" r="1.3" fill="#f2c14e"/>
+    </pattern>
+    <pattern id="prada" width="14" height="14" patternUnits="userSpaceOnUse">
+      <rect width="14" height="14" fill="#5d1f5f"/>
+      <circle cx="7" cy="7" r="2.6" fill="none" stroke="#f2c14e" stroke-width="1.2"/>
+      <circle cx="0" cy="0" r="1.3" fill="#f2c14e"/><circle cx="14" cy="14" r="1.3" fill="#f2c14e"/><circle cx="14" cy="0" r="1.3" fill="#f2c14e"/><circle cx="0" cy="14" r="1.3" fill="#f2c14e"/>
+    </pattern>
+    <pattern id="kawungTop" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#e7cfa0"/><g fill="#7a4a25"><ellipse cx="8" cy="3.6" rx="2.2" ry="3.4"/><ellipse cx="8" cy="12.4" rx="2.2" ry="3.4"/><ellipse cx="3.6" cy="8" rx="3.4" ry="2.2"/><ellipse cx="12.4" cy="8" rx="3.4" ry="2.2"/></g>
+    </pattern>
+    <pattern id="batikBlue" width="18" height="18" patternUnits="userSpaceOnUse">
+      <rect width="18" height="18" fill="#2f4f9e"/><path d="M2 9 Q2 3 8 3 Q13 3 13 8 Q13 11 10 11 Q7 11 7 8" stroke="#e8eefc" stroke-width="1.6" fill="none"/><circle cx="15" cy="15" r="1.4" fill="#f6b21b"/>
+    </pattern>
+    <pattern id="dayak" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="#f6b21b"/><path d="M4 34 Q4 6 20 6 Q34 6 34 18 Q34 26 26 26 Q19 26 19 19 Q19 14 24 14" stroke="#1c1c1c" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="34" cy="34" r="3" fill="#d9434f" stroke="#1c1c1c" stroke-width="1.5"/>
+    </pattern>
+    <pattern id="blangkon" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#4a2a14"/><circle cx="3" cy="3" r="1.1" fill="#e2b874"/>
+    </pattern>
+    <pattern id="kawung" width="36" height="36" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="rgba(255,255,255,.07)" stroke-width="2">
+        <ellipse cx="18" cy="9" rx="5" ry="8"/><ellipse cx="18" cy="27" rx="5" ry="8"/>
+        <ellipse cx="9" cy="18" rx="8" ry="5"/><ellipse cx="27" cy="18" rx="8" ry="5"/>
+      </g>
+    </pattern>
+    <pattern id="waves" width="80" height="26" patternUnits="userSpaceOnUse">
+      <path d="M0 13 Q10 5 20 13 T40 13" stroke="rgba(255,255,255,.09)" stroke-width="2" fill="none"/>
+    </pattern>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9fd6ff"/><stop offset="1" stop-color="#ffefc9"/>
+    </linearGradient>
+    <linearGradient id="screenGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bfe8ff"/><stop offset="1" stop-color="#e9f7ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#home" aria-label="Digital Safety Adventure home"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 L56 13 V30 C56 45 45 56 32 60 C19 56 8 45 8 30 V13Z" fill="#f6b21b" stroke="#1c2147" stroke-width="3"/><path d="M22 32 L29 39 L43 24" stroke="#1c2147" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Digital Safety Adventure</span></a>
+    <div class="top-actions">
+      <span class="star-total" id="starTotal" title="Stars collected"></span>
+      <button class="pill-btn" id="helpBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 12 H22 M12 2 C8 6 8 18 12 22 C16 18 16 6 12 2" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="lbl">Bantuan B. Indonesia</span></button>
+      <button class="pill-btn" id="soundBtn" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 H8 L13 5 V19 L8 15 H4Z" fill="currentColor"/><path d="M16 9 Q18 12 16 15 M18.5 7 Q22 12 18.5 17" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><span class="lbl">Sound</span></button>
+    </div>
+  </div>
+</header>
+
+<div id="app"></div>
+
+<script>
+/* ===================== state ===================== */
+const STORE = 'dsa-progress-v1';
+const state = { progress:{}, help:false, sound:true };
+try { Object.assign(state, JSON.parse(localStorage.getItem(STORE)) || {}); } catch(e) {}
+function save(){ try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e) {} }
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function h(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+const idh = (t, tag='p') => `<${tag} class="idh">${t}</${tag}>`;
+const strip = s => s.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ===================== sound ===================== */
+const Speech = {
+  voice:null,
+  init(){
+    if(!('speechSynthesis' in window)) return;
+    const pick = () => {
+      const vs = speechSynthesis.getVoices();
+      this.voice = vs.find(v=>/^en[-_](US|GB)/i.test(v.lang) && /samantha|google us|zira|aria|jenny|libby|female/i.test(v.name))
+        || vs.find(v=>/^en[-_](US|GB)/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+    };
+    pick(); speechSynthesis.onvoiceschanged = pick;
+  },
+  say(text, rate=0.85){
+    if(!state.sound || !('speechSynthesis' in window)) return;
+    try{
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(strip(text));
+      u.lang = 'en-US'; if(this.voice) u.voice = this.voice; u.rate = rate; u.pitch = 1.05;
+      speechSynthesis.speak(u);
+    }catch(e){}
+  },
+  stop(){ try{ speechSynthesis.cancel(); }catch(e){} }
+};
+Speech.init();
+let actx;
+function tone(seq){
+  if(!state.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    let t = actx.currentTime;
+    seq.forEach(([f,d])=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.16,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+d+0.03); t += d*0.75;
+    });
+  }catch(e){}
+}
+/* pentatonic chimes, a nod to gamelan */
+const sfx = {
+  good:()=>tone([[523,.12],[587,.12],[784,.22]]),
+  bad:()=>tone([[247,.16],[220,.26]]),
+  star:()=>tone([[659,.1],[784,.1],[880,.1],[1047,.32]]),
+  tap:()=>tone([[660,.05]])
+};
+
+/* ===================== art: icons ===================== */
+const INK = '#1c2147';
+const SPK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 H8 L13 5 V19 L8 15 H4Z" fill="${INK}"/><path d="M16 9 Q18 12 16 15 M18.5 7 Q22 12 18.5 17" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+const STAR = (fill='#f6b21b') => `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 L40 23 L60 24 L44 37 L50 58 L32 46 L14 58 L20 37 L4 24 L24 23Z" fill="${fill}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/></svg>`;
+const ICONS = {
+  name:`<rect x="6" y="14" width="52" height="38" rx="7" fill="#fff"/><path d="M6 21 a7 7 0 0 1 7 -7 H51 a7 7 0 0 1 7 7 V25 H6Z" fill="#d9434f"/><path d="M16 36 H48 M16 44 H38" stroke-linecap="round"/><rect x="6" y="14" width="52" height="38" rx="7" fill="none"/>`,
+  house:`<path d="M12 30 L32 12 L52 30 V54 H12Z" fill="#f6b21b"/><rect x="27" y="38" width="11" height="16" fill="#7a4a25"/><rect x="16" y="34" width="8" height="8" fill="#8fd3ff"/><path d="M6 33 L32 9 L58 33" fill="none" stroke="#d9434f" stroke-width="5" stroke-linecap="round"/>`,
+  lock:`<path d="M21 29 V21 a11 11 0 0 1 22 0 V29" fill="none" stroke-width="6" stroke="${INK}"/><rect x="13" y="28" width="38" height="29" rx="6" fill="#2a3990"/><circle cx="32" cy="40" r="4.5" fill="#f6b21b" stroke="none"/><rect x="30" y="42" width="4" height="8" rx="1" fill="#f6b21b" stroke="none"/>`,
+  school:`<path d="M32 14 V3" stroke-width="2.5"/><rect x="32" y="3" width="13" height="4.5" fill="#d9434f" stroke="none"/><rect x="32" y="7.5" width="13" height="4.5" fill="#fff" stroke-width="1"/><rect x="10" y="27" width="44" height="28" fill="#fff"/><path d="M5 29 L32 14 L59 29Z" fill="#d9434f"/><rect x="27" y="40" width="10" height="15" fill="#7a4a25"/><rect x="15" y="33" width="8" height="7" fill="#8fd3ff"/><rect x="41" y="33" width="8" height="7" fill="#8fd3ff"/>`,
+  phone:`<rect x="18" y="5" width="28" height="54" rx="6" fill="#2b2f4a"/><rect x="22" y="12" width="20" height="36" rx="2" fill="#8fd3ff" stroke="none"/><g fill="${INK}" stroke="none"><circle cx="27" cy="20" r="2"/><circle cx="32" cy="20" r="2"/><circle cx="37" cy="20" r="2"/><circle cx="27" cy="28" r="2"/><circle cx="32" cy="28" r="2"/><circle cx="37" cy="28" r="2"/><circle cx="27" cy="36" r="2"/><circle cx="32" cy="36" r="2"/><circle cx="37" cy="36" r="2"/></g><circle cx="32" cy="53" r="2.4" fill="#fff" stroke="none"/>`,
+  shield:`<path d="M32 5 L54 13 V30 C54 44 44 54 32 59 C20 54 10 44 10 30 V13Z" fill="#23935f"/><path d="M22 31 L30 39 L44 23" stroke="#fff" stroke-width="5.5" fill="none" stroke-linecap="round"/>`,
+  palette:`<path d="M32 7 C14 7 5 21 7 34 C9 48 23 57 34 55 C41 54 38 46 42 44 C48 41 57 44 58 33 C59 17 47 7 32 7Z" fill="#fff"/><circle cx="20" cy="26" r="5" fill="#d9434f"/><circle cx="31" cy="17" r="5" fill="#f6b21b"/><circle cx="44" cy="21" r="5" fill="#23935f"/><circle cx="19" cy="40" r="5" fill="#2a3990"/><circle cx="34" cy="43" r="3.5" fill="#f7f8fc"/>`,
+  idcard:`<rect x="4" y="12" width="56" height="40" rx="6" fill="#fff"/><rect x="4" y="12" width="56" height="10" rx="5" fill="#2a3990"/><circle cx="19" cy="35" r="7" fill="#c98b5e"/><path d="M10 50 C10 42 28 42 28 50Z" fill="#f4c7d0"/><path d="M34 32 H52 M34 40 H48" stroke-linecap="round"/>`,
+  buddy:`<path d="M32 5 L40 22 L59 24 L45 37 L49 57 L32 47 L15 57 L19 37 L5 24 L24 22Z" fill="#ffd34d"/><circle cx="26" cy="32" r="3" fill="${INK}" stroke="none"/><circle cx="38" cy="32" r="3" fill="${INK}" stroke="none"/><path d="M26 40 Q32 46 38 40" fill="none" stroke-linecap="round"/><circle cx="21" cy="38" r="2.5" fill="#ff8a8a" stroke="none"/><circle cx="43" cy="38" r="2.5" fill="#ff8a8a" stroke="none"/>`,
+  rice:`<path d="M14 30 C15 17 49 17 50 30Z" fill="#fff"/><path d="M28 18 C30 10 40 8 44 12 C38 13 34 16 32 20Z" fill="#23935f"/><path d="M8 30 H56 C56 45 45 55 32 55 C19 55 8 45 8 30Z" fill="#d9434f"/><path d="M14 38 H50" stroke="#fff" stroke-width="2"/>`,
+  kite:`<path d="M32 4 L52 25 L32 48 L12 25Z" fill="#f6b21b"/><path d="M32 4 V48 M12 25 H52" /><path d="M32 4 L52 25 L32 25Z" fill="#d9434f"/><path d="M32 48 Q26 53 32 57 Q38 60 33 63" fill="none" stroke="#d9434f" stroke-width="2.5"/>`,
+  cursor:`<path d="M18 8 L18 48 L28 38 L35 54 L42 51 L35 35 L49 35Z" fill="#fff"/><path d="M46 10 a12 12 0 0 1 8 8 M50 3 a18 18 0 0 1 11 11" stroke="#f6b21b" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  chain:`<g transform="rotate(-45 32 32)"><rect x="6" y="24" width="28" height="16" rx="8" stroke-width="5" stroke="#2a3990"/><rect x="30" y="24" width="28" height="16" rx="8" stroke-width="5" stroke="#1a56d6"/></g>`,
+  envelope:`<rect x="6" y="14" width="52" height="38" rx="5" fill="#fff"/><path d="M6 18 L32 36 L58 18"/><circle cx="53" cy="15" r="8" fill="#d9434f"/>`,
+  stranger:`<circle cx="32" cy="21" r="12" fill="#8a8fae"/><path d="M10 58 C10 39 54 39 54 58Z" fill="#8a8fae"/><text x="32" y="28" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" stroke="none">?</text>`,
+  magnifier:`<path d="M40 40 L56 56" stroke-width="8" stroke-linecap="round" stroke="#7a4a25"/><circle cx="27" cy="27" r="17" fill="#bfe8ff" stroke-width="5"/><text x="27" y="35" text-anchor="middle" font-size="22" font-weight="800" fill="#d9434f" stroke="none">!</text>`,
+  trash:`<path d="M14 18 H50 L46 58 H18Z" fill="#a9aed0"/><rect x="10" y="12" width="44" height="7" rx="3" fill="#5d6596"/><rect x="26" y="5" width="12" height="7" rx="2" fill="#5d6596"/><path d="M25 26 V50 M32 26 V50 M39 26 V50" stroke="#fff" stroke-width="2.5"/>`,
+  adult:`<path d="M8 58 C8 36 40 36 40 58Z" fill="#2a7d8c"/><path d="M12 22 Q12 6 24 6 Q36 6 36 22 L38 40 Q24 44 10 40Z" fill="#2a7d8c"/><ellipse cx="24" cy="21" rx="8" ry="9" fill="#c48a5c"/><path d="M36 58 C36 44 58 44 58 58Z" fill="#1f6f5c"/><circle cx="47" cy="36" r="7" fill="#b9784b"/><path d="M40 32 L54 32 L53 26 Q47 24 41 26Z" fill="#1b1b22"/><path d="M34 46 Q40 40 44 46" fill="none" stroke-width="2.4"/>`,
+  account:`<rect x="8" y="8" width="48" height="48" rx="10" fill="#fff"/><circle cx="32" cy="26" r="9" fill="#b9784b"/><path d="M16 50 C16 36 48 36 48 50Z" fill="#2f4f9e"/>`,
+  meter:`<rect x="6" y="40" width="10" height="16" rx="2" fill="#23935f"/><rect x="20" y="30" width="10" height="26" rx="2" fill="#23935f"/><rect x="34" y="20" width="10" height="36" rx="2" fill="#23935f"/><rect x="48" y="8" width="10" height="48" rx="2" fill="#23935f"/>`,
+  umbrella:`<path d="M32 8 V4"/><path d="M6 32 Q6 8 32 8 Q58 8 58 32 Q52 26 45 32 Q39 26 32 32 Q25 26 19 32 Q12 26 6 32Z" fill="#d9434f"/><path d="M32 32 V52 Q32 58 26 58 Q21 58 21 53" stroke-width="3.5"/>`,
+  shh:`<circle cx="30" cy="32" r="24" fill="#ffd34d"/><circle cx="22" cy="27" r="2.6" fill="${INK}" stroke="none"/><circle cx="38" cy="27" r="2.6" fill="${INK}" stroke="none"/><path d="M22 42 H38"/><rect x="26.5" y="31" width="7" height="25" rx="3.5" fill="#c98b5e"/>`,
+  vault:`<rect x="5" y="7" width="54" height="50" rx="7" fill="#4a5180"/><rect x="10" y="12" width="44" height="40" rx="4" fill="#5d6596"/><circle cx="30" cy="32" r="13" fill="#d4d8ee"/><circle cx="30" cy="32" r="4" fill="#4a5180"/><path d="M30 19 V23 M30 41 V45 M17 32 H21 M39 32 H43" /><rect x="47" y="24" width="5" height="16" rx="2" fill="#f6b21b"/><rect x="12" y="57" width="8" height="4" fill="${INK}"/><rect x="44" y="57" width="8" height="4" fill="${INK}"/>`,
+  share:`<path d="M10 12 H46 a7 7 0 0 1 7 7 V36 a7 7 0 0 1 -7 7 H26 L15 53 V43 H10 a7 7 0 0 1 -7 -7 V19 a7 7 0 0 1 7 -7Z" fill="#23935f"/><path d="M28 36 C18 29 18 20 24 20 C27 20 28 23 28 23 C28 23 29 20 32 20 C38 20 38 29 28 36Z" fill="#fff" stroke="none"/><path d="M44 24 L49 24 M46.5 21.5 V26.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`
+};
+function icon(name, size=64, cls=''){
+  return `<svg ${cls?`class="${cls}"`:''} viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><g stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" fill="none">${ICONS[name]}</g></svg>`;
+}
+
+/* ===================== art: characters ===================== */
+const OUTLINE = '#2a1a10';
+function person(o){
+  const {x=0,y=0,s=1,skin='#c98b5e',hair='#2b1a12',top='#f4c7d0',panel='#fff4f6',bottom='url(#parang)',type='girl',style='bun',arms='down',mouth='smile',sash=null,screen='play',flip=false,hijab='#2a7d8c',belt=true,pants='#2a3256',sarong=true} = o;
+  const st = `stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round"`;
+  let back='';
+  if(style==='flower') back = `<path d="M32 40 Q32 12 60 12 Q88 12 88 40 L91 94 L29 94 Z" fill="${hair}"/>`;
+  if(style==='sanggul') back = `<circle cx="81" cy="45" r="12" fill="${hair}" ${st}/><g fill="#fff"><circle cx="76" cy="36" r="2.4"/><circle cx="82" cy="34" r="2.4"/><circle cx="88" cy="38" r="2.4"/><circle cx="91" cy="45" r="2.4"/></g>`;
+  const feet = `<ellipse cx="48" cy="226" rx="11" ry="5" fill="#3b2418"/><ellipse cx="72" cy="226" rx="11" ry="5" fill="#3b2418"/>`;
+  let lower;
+  if(type==='girl'){
+    lower = `<path d="M38 126 L82 126 L88 222 L32 222 Z" fill="${bottom}" ${st}/><path d="M63 126 L71 222" stroke="${OUTLINE}" stroke-width="1.5" opacity=".55"/><path d="M71 222 L66 214 L76 214Z" fill="#00000030"/>`;
+  } else {
+    lower = `<path d="M40 126 L80 126 L82 222 L63 222 L60 166 L57 222 L38 222 Z" fill="${pants}" ${st}/>` + (sarong ? `<path d="M34 119 L86 119 L90 180 L30 180 Z" fill="${bottom}" ${st}/><path d="M34 126 H86" stroke="#f2c14e" stroke-width="2"/>` : '');
+  }
+  const torso = `<path d="M33 80 Q60 70 87 80 L84 132 L36 132 Z" fill="${top}" ${st}/>`;
+  let detail='';
+  if(type==='girl'){
+    detail = `<path d="M54 77 L66 77 L64 122 L56 122 Z" fill="${panel}"/><path d="M48 78 L60 104 L72 78" fill="none" stroke="${OUTLINE}" stroke-width="1.6"/>
+      <g fill="#fff" opacity=".55"><circle cx="42" cy="95" r="1.7"/><circle cx="46" cy="106" r="1.7"/><circle cx="76" cy="95" r="1.7"/><circle cx="73" cy="108" r="1.7"/><circle cx="41" cy="116" r="1.7"/><circle cx="79" cy="117" r="1.7"/></g>
+      <g fill="#f2c14e"><circle cx="60" cy="88" r="1.8"/><circle cx="60" cy="97" r="1.8"/><circle cx="60" cy="106" r="1.8"/></g>
+      ${belt?`<rect x="36.5" y="121" width="47" height="9" rx="2" fill="#6b2737" ${st}/>`:''}`;
+  } else {
+    detail = `<path d="M50 77 L60 94 L70 77" fill="none" stroke="${OUTLINE}" stroke-width="2"/><g fill="#f2c14e"><circle cx="60" cy="101" r="2"/><circle cx="60" cy="111" r="2"/></g>`;
+  }
+  if(sash) detail += `<path d="M34 108 L87 99 L87 114 L34 123 Z" fill="${sash}" ${st}/><path d="M79 108 L92 150 L83 153 L71 113 Z" fill="${sash}" ${st}/>`;
+  const sleeve = (d) => `<path d="${d}" fill="${top}" ${st}/>`;
+  const hand = (cx,cy) => `<circle cx="${cx}" cy="${cy}" r="6.2" fill="${skin}" ${st}/>`;
+  let armsSvg='';
+  const Ld = sleeve('M35 82 Q24 92 25 128 L36 129 L41 96 Z') + hand(30.5,133);
+  const Rd = sleeve('M85 82 Q96 92 95 128 L84 129 L79 96 Z') + hand(89.5,133);
+  if(arms==='hold'){
+    let scr='';
+    if(screen==='play') scr = `<path d="M57 100 L57 110 L65 105Z" fill="#fff"/>`;
+    if(screen==='pop') scr = `<rect x="50" y="98" width="20" height="13" rx="2" fill="#fff6c9" stroke="#d9434f" stroke-width="1.5"/>`;
+    if(screen==='lock') scr = `<path d="M56.5 103 V100 a3.5 3.5 0 0 1 7 0 V103" stroke="#f6b21b" stroke-width="2" fill="none"/><rect x="54" y="102.5" width="12" height="9" rx="2" fill="#f6b21b"/>`;
+    if(screen==='closed') scr = `<path d="M54 99 L66 111 M66 99 L54 111" stroke="#d9434f" stroke-width="3" stroke-linecap="round"/>`;
+    armsSvg = sleeve('M35 82 Q22 100 34 117 L47 113 L45 102 L41 97 Z') + sleeve('M85 82 Q98 100 86 117 L73 113 L75 102 L79 97 Z')
+      + `<rect x="40" y="92" width="40" height="27" rx="4" fill="#2b2f4a" ${st}/><rect x="44" y="95" width="32" height="20" rx="2" fill="#8fd3ff"/>${scr}`
+      + hand(43,114) + hand(77,114);
+  } else if(arms==='wave'){
+    armsSvg = Ld + sleeve('M84 84 Q104 70 100 40 L90 40 L88 66 L80 88 Z') + hand(95,35);
+  } else if(arms==='thumb'){
+    armsSvg = Ld + sleeve('M85 82 Q100 96 98 112 L88 114 L80 96 Z') + `<rect x="88" y="104" width="13" height="12" rx="4" fill="${skin}" ${st}/><rect x="91" y="94" width="5" height="12" rx="2.5" fill="${skin}" ${st}/>`;
+  } else {
+    armsSvg = Ld + Rd;
+  }
+  let neck = `<rect x="54" y="60" width="12" height="17" fill="${skin}"/>`;
+  let ears = style==='flower' ? '' : `<circle cx="36" cy="47" r="5" fill="${skin}" ${st}/><circle cx="84" cy="47" r="5" fill="${skin}" ${st}/>`;
+  let head = `<circle cx="60" cy="44" r="24" fill="${skin}" ${st}/>`;
+  if(style==='hijab'){ neck=''; ears=''; head = `<path d="M30 50 Q29 12 60 12 Q91 12 90 50 L97 95 Q60 105 23 95 Z" fill="${hijab}" ${st}/><path d="M60 72 L50 100 M60 72 L70 100" stroke="#00000022" stroke-width="2"/><ellipse cx="60" cy="47" rx="19" ry="21" fill="${skin}" ${st}/>`; }
+  let hairF='';
+  if(style==='bun') hairF = `<circle cx="60" cy="16" r="10" fill="${hair}"/><path d="M35 45 Q33 19 60 19 Q87 19 85 45 Q81 31 68 29 Q60 37 47 32 Q39 36 35 45Z" fill="${hair}"/><rect x="49" y="13" width="22" height="3.4" rx="1.7" fill="#f2c14e"/><circle cx="71" cy="14.7" r="2.6" fill="#d9434f"/>`;
+  if(style==='sanggul') hairF = `<path d="M35 45 Q33 19 60 19 Q87 19 85 45 Q80 30 60 29 Q41 30 35 45Z" fill="${hair}"/><path d="M59 21 Q60 26 60 29" stroke="#00000040" stroke-width="1.5"/>`;
+  if(style==='short') hairF = `<path d="M35 45 Q33 17 60 17 Q87 17 85 45 Q81 30 70 31 Q66 23 58 29 Q52 22 46 30 Q39 31 35 45Z" fill="${hair}"/>`;
+  if(style==='peci') hairF = `<path d="M36 46 Q36 25 60 25 Q84 25 84 46 Q79 35 60 35 Q41 35 36 46Z" fill="${hair}"/><path d="M37 32 L83 32 L80 11 Q60 6 40 11 Z" fill="#1b1b22" ${st}/><path d="M38 28 H82" stroke="#4a4a5a" stroke-width="1.6"/>`;
+  if(style==='flower') hairF = `<path d="M35 44 Q35 15 60 15 Q85 15 85 44 Q75 27 58 30 Q45 28 35 44Z" fill="${hair}"/>
+     <g transform="translate(81 25)"><g fill="#fff" stroke="${OUTLINE}" stroke-width="1.2">${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-6" rx="3.6" ry="6.5" transform="rotate(${a})"/>`).join('')}</g><circle r="3" fill="#f6b21b"/></g>`;
+  const eyes = `<ellipse cx="51" cy="46" rx="3.3" ry="4.1" fill="#1d1d26"/><ellipse cx="69" cy="46" rx="3.3" ry="4.1" fill="#1d1d26"/><circle cx="52.3" cy="44.5" r="1.2" fill="#fff"/><circle cx="70.3" cy="44.5" r="1.2" fill="#fff"/>
+    <path d="M46 37.5 Q51 34.5 56 37.5 M64 37.5 Q69 34.5 74 37.5" stroke="${hair}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="44.5" cy="55" rx="4.5" ry="3" fill="#ff7f7f" opacity=".42"/><ellipse cx="75.5" cy="55" rx="4.5" ry="3" fill="#ff7f7f" opacity=".42"/>`;
+  const mouths = {
+    smile:`<path d="M53 56 Q60 63 67 56" stroke="#7a2b2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+    grin:`<path d="M52 55 Q60 67 68 55 Z" fill="#7a2b2b" stroke="#7a2b2b" stroke-width="1.5" stroke-linejoin="round"/><path d="M55 56.5 H65" stroke="#fff" stroke-width="2"/>`,
+    o:`<ellipse cx="60" cy="59" rx="3.6" ry="4.6" fill="#7a2b2b"/>`,
+    think:`<path d="M54 59 Q60 57 66 59.5" stroke="#7a2b2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+    sad:`<path d="M53 61 Q60 55 67 61" stroke="#7a2b2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+  };
+  const tf = flip ? `translate(${x+120*s} ${y}) scale(${-s} ${s})` : `translate(${x} ${y}) scale(${s})`;
+  return `<g transform="${tf}">${back}${feet}${lower}${torso}${detail}${armsSvg}${neck}${ears}${head}${hairF}${eyes}${mouths[mouth]||mouths.smile}</g>`;
+}
+const CAST = {
+  sri:{type:'girl',style:'bun',skin:'#c98b5e',hair:'#2b1a12',top:'#f4c7d0',panel:'#fff4f6',bottom:'url(#parang)'},
+  mother:{type:'girl',style:'sanggul',skin:'#bf8257',hair:'#24150d',top:'#3f8f7c',panel:'#e7f4ef',bottom:'url(#parangMom)'},
+  ahmad:{type:'boy',style:'peci',skin:'#b9784b',hair:'#1f140e',top:'#1f6f5c',bottom:'url(#songket)'},
+  teacher:{type:'girl',style:'hijab',hijab:'#2a7d8c',skin:'#c48a5c',hair:'#3a2a20',top:'url(#kawungTop)',panel:'#e7cfa0',bottom:'#2d3550',belt:false},
+  dina:{type:'girl',style:'flower',skin:'#c4875a',hair:'#1c120c',top:'#fff4d6',panel:'#ffe08a',sash:'#f6b21b',bottom:'url(#prada)'}
+};
+function kancil(x=0,y=0,s=1){
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+  <g stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="25" y="70" width="7" height="38" rx="3.5" fill="#8a5428"/><rect x="37" y="72" width="7" height="36" rx="3.5" fill="#a0652f"/>
+    <rect x="66" y="72" width="7" height="36" rx="3.5" fill="#a0652f"/><rect x="78" y="70" width="7" height="38" rx="3.5" fill="#8a5428"/>
+    <path d="M22 56 Q11 51 13 44 Q20 49 26 53Z" fill="#f4dfc2"/>
+    <ellipse cx="54" cy="64" rx="35" ry="21" fill="#c07a3c"/>
+    <path d="M77 56 Q83 38 92 32 L102 43 Q93 51 89 66 Z" fill="#c07a3c"/>
+    <ellipse cx="87" cy="21" rx="5" ry="10" transform="rotate(-28 87 21)" fill="#c07a3c"/>
+    <ellipse cx="98" cy="35" rx="15" ry="12.5" fill="#c07a3c"/>
+    <ellipse cx="111" cy="41" rx="8.5" ry="6.5" fill="#dc9a5e"/>
+    <path d="M83 31 Q85 13 100 13 Q113 15 113 28 Q100 21 83 31Z" fill="url(#blangkon)"/>
+    <circle cx="83" cy="27" r="6" fill="url(#blangkon)"/>
+  </g>
+  <ellipse cx="54" cy="73" rx="23" ry="8" fill="#f4dfc2"/>
+  <circle cx="118" cy="39" r="2.6" fill="${OUTLINE}"/>
+  <circle cx="100" cy="33" r="3.6" fill="#1d1d26"/><circle cx="101.3" cy="31.7" r="1.2" fill="#fff"/>
+  <path d="M105 45 Q109 48 113 46" stroke="${OUTLINE}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="94" cy="42" rx="3.4" ry="2.2" fill="#ff7f7f" opacity=".45"/>
+  </g>`;
+}
+const KANCIL_SVG = `<svg viewBox="0 0 130 115" aria-hidden="true">${kancil(2,2,1)}</svg>`;
+
+/* ===================== art: scenes ===================== */
+function joglo(){
+  return `<rect width="800" height="450" fill="url(#sky)"/>
+  <circle cx="700" cy="70" r="34" fill="#ffd56b"/>
+  <path d="M0 300 Q150 225 300 290 T600 268 T800 282 V450 H0Z" fill="#9fd3a8"/>
+  <path d="M300 28 L500 28 L540 90 L260 90Z" fill="#5a3216" stroke="${OUTLINE}" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M260 90 L540 90 L705 172 L95 172Z" fill="#7a4a25" stroke="${OUTLINE}" stroke-width="3" stroke-linejoin="round"/>
+  <g stroke="#5a3216" stroke-width="2.5">${[130,190,250,310,370,430,490,550,610,670].map(xx=>`<path d="M${400+(xx-400)*0.55} 92 L${xx} 170"/>`).join('')}</g>
+  <rect x="95" y="172" width="610" height="11" fill="#c9962e" stroke="${OUTLINE}" stroke-width="2"/>
+  <rect x="175" y="183" width="450" height="190" fill="#ecd0a1"/>
+  <g fill="none" stroke="#c49a63" stroke-width="2">
+    <rect x="230" y="205" width="110" height="140" rx="4"/><rect x="460" y="205" width="110" height="140" rx="4"/>
+    <path d="M285 225 l14 14 -14 14 -14 -14Z M515 225 l14 14 -14 14 -14 -14Z"/>
+  </g>
+  <g fill="#8a5428" stroke="${OUTLINE}" stroke-width="2">
+    <rect x="150" y="183" width="20" height="195"/><rect x="345" y="183" width="18" height="195"/><rect x="437" y="183" width="18" height="195"/><rect x="630" y="183" width="20" height="195"/>
+  </g>
+  <rect x="40" y="372" width="720" height="78" fill="#d9b48a" stroke="${OUTLINE}" stroke-width="2"/>
+  <g stroke="#c19a6d" stroke-width="2">${[120,200,280,360,440,520,600,680].map(xx=>`<path d="M${xx} 372 L${xx-18} 450"/>`).join('')}<path d="M40 410 H760"/></g>
+  <g stroke="${OUTLINE}" stroke-width="2"><path d="M60 372 L70 340 L100 340 L110 372Z" fill="#b5562f"/><path d="M85 340 Q60 300 70 280 Q85 300 85 340 Q95 290 115 285 Q110 315 85 340Z" fill="#3f9a5d"/>
+  <path d="M690 372 L700 340 L730 340 L740 372Z" fill="#b5562f"/><path d="M715 340 Q690 300 700 280 Q715 300 715 340 Q725 290 745 285 Q740 315 715 340Z" fill="#3f9a5d"/></g>`;
+}
+function speech(x,y,w,hgt,lines,tail='left',fs=24){
+  const tx = tail==='left' ? `M${x+30} ${y+hgt-2} L${x+14} ${y+hgt+26} L${x+58} ${y+hgt-2}` : `M${x+w-60} ${y+hgt-2} L${x+w-14} ${y+hgt+26} L${x+w-32} ${y+hgt-2}`;
+  return `<g><rect x="${x}" y="${y}" width="${w}" height="${hgt}" rx="22" fill="#fff" stroke="${OUTLINE}" stroke-width="3"/><path d="${tx}" fill="#fff" stroke="${OUTLINE}" stroke-width="3" stroke-linejoin="round"/><rect x="${x+20}" y="${y+hgt-8}" width="44" height="8" fill="#fff"/>
+  ${lines.map((l,i)=>`<text x="${x+w/2}" y="${y+40+i*(fs+8)}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${INK}">${l}</text>`).join('')}</g>`;
+}
+const SCENES = {
+  m7s1:()=>`${joglo()}
+    ${person({...CAST.sri,x:318,y:111,s:1.3,arms:'hold',screen:'play'})}
+    <g transform="translate(486 196)">
+      <rect width="150" height="96" rx="16" fill="#fff" stroke="${OUTLINE}" stroke-width="3"/>
+      <path d="M8 70 L-24 92 L20 82Z" fill="#fff" stroke="${OUTLINE}" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="12" y="12" width="126" height="72" rx="8" fill="#bfe8ff"/>
+      <path d="M12 70 Q50 44 80 62 T138 56 V84 H12Z" fill="#7cc58f"/>
+      <text x="40" y="48" font-size="26" font-weight="800" fill="#d9434f">A</text><text x="64" y="48" font-size="26" font-weight="800" fill="#2a3990">B</text><text x="88" y="48" font-size="26" font-weight="800" fill="#23935f">C</text>
+    </g>`,
+  m7s2:()=>`<rect width="800" height="450" fill="#2a3990"/><rect width="800" height="450" fill="url(#kawung)"/>
+    <rect x="110" y="24" width="580" height="402" rx="30" fill="#1c2147" stroke="#000" stroke-width="3"/>
+    <rect x="132" y="46" width="536" height="358" rx="10" fill="url(#screenGlow)"/>
+    <path d="M132 330 Q260 270 380 320 T668 300 V404 H132Z" fill="#9fd3a8"/>
+    <rect x="132" y="46" width="536" height="358" rx="10" fill="#1c2147" opacity=".35"/>
+    <g class="popup">
+      <rect x="190" y="66" width="420" height="318" rx="20" fill="#fff6c9" stroke="#d9434f" stroke-width="5"/>
+      <path d="M190 86 a20 20 0 0 1 20 -20 H590 a20 20 0 0 1 20 20 V120 H190Z" fill="#d9434f"/>
+      <text x="400" y="106" text-anchor="middle" font-size="30" font-weight="800" fill="#fff">YOU WIN A TOY!</text>
+      <g transform="translate(548 72) scale(.66)"><rect x="6" y="22" width="52" height="38" fill="#f6b21b" stroke="${INK}" stroke-width="3"/><rect x="2" y="12" width="60" height="12" fill="#f6b21b" stroke="${INK}" stroke-width="3"/><path d="M32 12 V60" stroke="#2a3990" stroke-width="6"/><path d="M32 12 C20 0 12 6 18 12 M32 12 C44 0 52 6 46 12" stroke="#2a3990" stroke-width="4" fill="none"/></g>
+      <text x="400" y="150" text-anchor="middle" font-size="19" font-weight="700" fill="${INK}" font-family="Andika, sans-serif">Enter your full name, home address,</text>
+      <text x="400" y="174" text-anchor="middle" font-size="19" font-weight="700" fill="${INK}" font-family="Andika, sans-serif">and school name to win a toy!</text>
+      ${['Full name','Home address','School name'].map((l,i)=>`<text x="225" y="${213+i*42}" font-size="16" font-weight="700" fill="#714d00" font-family="Andika, sans-serif">${l}</text><rect x="345" y="${194+i*42}" width="230" height="28" rx="6" fill="#fff" stroke="#b9a35a" stroke-width="2"/>`).join('')}
+      <rect x="330" y="328" width="140" height="40" rx="12" fill="#23935f" stroke="${INK}" stroke-width="2.5"/>
+      <text x="400" y="355" text-anchor="middle" font-size="22" font-weight="800" fill="#fff">ENTER</text>
+    </g>
+    <g transform="translate(-6 268)">${person({...CAST.sri,x:0,y:0,s:.95,mouth:'o'})}</g>`,
+  m7s3:()=>`${joglo()}
+    ${person({...CAST.sri,x:120,y:111,s:1.3,arms:'hold',screen:'closed',mouth:'think'})}
+    <circle cx="262" cy="118" r="8" fill="#fff" stroke="${OUTLINE}" stroke-width="2.5"/><circle cx="292" cy="92" r="13" fill="#fff" stroke="${OUTLINE}" stroke-width="2.5"/>
+    <g><ellipse cx="535" cy="110" rx="232" ry="88" fill="#fff" stroke="${OUTLINE}" stroke-width="3"/></g>
+    <g transform="translate(330 30)">${person({...CAST.mother,x:0,y:0,s:.62,arms:'down',mouth:'smile'})}</g>
+    <text x="590" y="102" text-anchor="middle" font-size="27" font-weight="800" fill="${INK}">Keep your personal</text>
+    <text x="590" y="136" text-anchor="middle" font-size="27" font-weight="800" fill="${INK}">details safe.</text>
+    <g transform="translate(300 268)">
+      <g stroke="#d9434f" stroke-width="4" stroke-linecap="round"><path d="M-46 0 H-36 M36 0 H46 M0 -46 V-36 M0 36 V46 M-32 -32 L-25 -25 M32 32 L25 25 M32 -32 L25 -25 M-32 32 L-25 25"/></g>
+      <circle r="28" fill="#d9434f" stroke="${OUTLINE}" stroke-width="3"/>
+      <path d="M-11 -11 L11 11 M11 -11 L-11 11" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(250 320)"><rect width="104" height="34" rx="10" fill="#fff" stroke="${OUTLINE}" stroke-width="2.5"/><text x="52" y="24" text-anchor="middle" font-size="20" font-weight="800" fill="#d9434f">CLOSE!</text></g>`,
+  m7s4:()=>`${joglo()}
+    ${person({...CAST.sri,x:190,y:111,s:1.3,arms:'down',mouth:'grin'})}
+    ${person({...CAST.mother,x:378,y:70,s:1.46,arms:'thumb',mouth:'grin'})}
+    ${speech(520,40,262,128,['Good job, Sri!','Your address and','school are private.'],'left',23)}
+    <g fill="#d9434f" stroke="${OUTLINE}" stroke-width="2">
+      <path d="M170 120 c-10 -12 -26 0 -14 14 l14 12 14 -12 c12 -14 -4 -26 -14 -14Z"/>
+      <path d="M375 70 c-7 -9 -19 0 -10 10 l10 9 10 -9 c9 -10 -3 -19 -10 -10Z"/>
+    </g>
+    <g transform="translate(616 288) scale(.85)">${kancil(0,0,1)}</g>
+    <g transform="translate(150 220) scale(.5)">${STAR().replace(/<\/?svg[^>]*>/g,'')}</g>
+    <g transform="translate(330 150) scale(.45)">${STAR().replace(/<\/?svg[^>]*>/g,'')}</g>`
+};
+function sceneSVG(key, label){ return `<svg viewBox="0 0 800 450" role="img" aria-label="${label}">${SCENES[key]()}</svg>`; }
+
+/* ===================== data ===================== */
+const MODULES = [
+  {id:7, title:'My Personal Information Is Private', theme:'Digital Awareness', region:'Yogyakarta, Java', short:'Yogyakarta', pin:[420,338], badge:'Privacy Keeper', badgeIcon:'shield', ready:true},
+  {id:8, title:'Think Before You Click!', theme:'Online Communication', region:'Riau, Sumatra', short:'Riau', pin:[178,170], badge:'Safe Clicker', badgeIcon:'cursor', ready:true},
+  {id:9, title:'My Password, My Protection', theme:'Digital Protection', region:'Kalimantan', short:'Kalimantan', pin:[462,158], badge:'Password Guard', badgeIcon:'lock', ready:true},
+  {id:10, title:'Be Kind Online!', theme:'Online Responsibility', region:'Bali', short:'Bali', pin:[566,354], badge:'Kindness Hero'},
+  {id:11, title:'Balance Your Screen Time', theme:'Healthy Digital Life', region:'Sulawesi', short:'Sulawesi', pin:[622,168], badge:'Balance Master'},
+  {id:12, title:'Be a Smart Digital Citizen!', theme:'Final Challenge', region:'Papua', short:'Papua', pin:[905,236], badge:'Smart Digital Citizen'}
+];
+const CONTENT = {};
+CONTENT[7] = {
+  value:'Mandiri (Self-reliance) & Responsibility: awareness and responsibility of protecting personal privacy data',
+  focus:'Nouns (Personal Data) & Possessive Adjectives (my, your, his, her)',
+  objectives:['Students can identify personal information that must be kept private online.','Students can construct simple sentences using possessive adjectives (This is my... / My ... is private).'],
+  storyTitle:"Sri's Tablet Routine",
+  story:[
+    {scene:'m7s1', alt:'Sri in a pink kebaya and batik cloth holds a tablet on the porch of a joglo house.', text:'Sri likes watching educational videos on her family [tablet].', id:'Sri suka menonton video edukasi di tablet keluarganya.'},
+    {scene:'m7s2', alt:'A tablet screen shows a bright pop-up that asks for full name, home address and school name to win a toy.', text:'One afternoon, a bright pop-up window appears on her screen. It says, “Enter your [full name], [home address], and [school name] to win a toy!”', id:'Suatu sore, sebuah jendela pop-up yang mencolok muncul di layarnya. Isinya: “Masukkan nama lengkap, alamat rumah, dan nama sekolahmu untuk memenangkan mainan!”'},
+    {scene:'m7s3', alt:'Sri remembers her mother saying keep your personal details safe, and closes the page.', text:'Sri remembers her mother’s words: “Keep your personal details safe.” Sri does not type anything. She closes the page immediately and tells her mother.', id:'Sri ingat pesan ibunya: “Jaga data pribadimu.” Sri tidak mengetik apa pun. Ia segera menutup halaman itu dan memberi tahu ibunya.'},
+    {scene:'m7s4', alt:'Sri’s mother gives a thumbs up and says good job, Sri, your address and school are private.', text:'Her mother smiles and says, “Good job, Sri! Your [address] and [school] are [private].”', id:'Ibunya tersenyum dan berkata, “Bagus, Sri! Alamat dan sekolahmu adalah informasi pribadi.”'}
+  ],
+  wordMap:{'full name':'Name','home address':'Address','address':'Address','school name':'School','school':'School','private':'Private','tablet':null},
+  comprehension:[
+    {q:'What does Sri use to watch educational videos?', qid:'Apa yang Sri gunakan untuk menonton video edukasi?', opts:['A television','A tablet','A radio'], a:1, fb:'Yes! Sri uses a tablet.'},
+    {q:'What three things does the pop-up window ask for?', qid:'Tiga hal apa yang diminta jendela pop-up itu?', opts:['Full name, home address, and school name','Favorite color, food, and toy','Her age, hobby, and pet'], a:0, fb:'Correct! It asks for her full name, home address, and school name.'},
+    {q:'Why does Sri close the pop-up window?', qid:'Mengapa Sri menutup jendela pop-up itu?', opts:['Because the toy is not pretty','Because the tablet is broken','Because her personal information is private'], a:2, fb:'Well done! Sri closes it because her personal information is private.'}
+  ],
+  vocab:[
+    {w:'Name', icon:'name', id:'nama', ex:'My name is Sri.'},
+    {w:'Address', icon:'house', id:'alamat', ex:'This is my address.'},
+    {w:'Password', icon:'lock', id:'kata sandi', ex:'My password is private.'},
+    {w:'School', icon:'school', id:'sekolah', ex:'Her school name is private.'},
+    {w:'Phone number', icon:'phone', id:'nomor telepon', ex:'My phone number is private.'},
+    {w:'Private', icon:'shield', id:'pribadi, rahasia', ex:'Keep your personal details private.'}
+  ],
+  patterns:['This is <b>my</b> address.','<b>My</b> password is private.','<b>Her</b> school name is private.'],
+  sentences:['This is my address.','My password is private.','Her school name is private.'],
+  possessive:[
+    {q:'Sri says, “____ address is private.”', qid:'Sri berbicara tentang dirinya sendiri.', a:0},
+    {q:'Mother says, “Sri, keep ____ personal details safe.”', qid:'Ibu berbicara kepada Sri.', a:1},
+    {q:'This is Ahmad. ____ password is secret.', qid:'Ahmad adalah anak laki-laki.', a:2},
+    {q:'This is Sri. ____ school name is private.', qid:'Sri adalah anak perempuan.', a:3}
+  ],
+  game:{
+    title:'Private Vault Challenge',
+    cards:[
+      {t:'Home Address', icon:'house', zone:'vault', why:'Yes! Your home address is private. Strangers should not know where you live.', id:'Alamat rumah itu rahasia.'},
+      {t:'Favorite Color', icon:'palette', zone:'share', why:'Yes! Your favorite color is safe to share. It cannot help a stranger find you.', id:'Warna favorit boleh dibagikan.'},
+      {t:'Account Password', icon:'lock', zone:'vault', why:'Yes! A password is always private. Keep it in the vault.', id:'Kata sandi selalu rahasia.'},
+      {t:'Full Name + School Name', icon:'idcard', zone:'vault', why:'Yes! Together, your full name and school name can help a stranger find you.', id:'Nama lengkap + nama sekolah bisa dipakai orang asing untuk menemukanmu.'},
+      {t:'Favorite Cartoon Character', icon:'buddy', zone:'share', why:'Yes! It is fun and safe to talk about your favorite cartoon.', id:'Tokoh kartun favorit boleh dibagikan.'},
+      {t:'Phone Number', icon:'phone', zone:'vault', why:'Yes! Your phone number is private.', id:'Nomor telepon itu rahasia.', extra:true},
+      {t:'Favorite Food', icon:'rice', zone:'share', why:'Yes! Talking about your favorite food is safe.', id:'Makanan favorit boleh dibagikan.', extra:true},
+      {t:'My Hobby: Flying Kites', icon:'kite', zone:'share', why:'Yes! Your hobby is safe to share.', id:'Hobi boleh dibagikan.', extra:true}
+    ],
+    hint:{
+      vault:['Hmm, can a stranger use this to find you or open your account? Try the Private Vault.','Hmm, apakah orang asing bisa memakai ini untuk menemukanmu atau membuka akunmu? Coba Private Vault.'],
+      share:['This one is safe. It cannot help a stranger find you. Try Safe Share.','Yang ini aman. Tidak bisa dipakai orang asing untuk menemukanmu. Coba Safe Share.']
+    }
+  },
+  assess:[
+    {type:'mc', q:'A stranger in an online game chat asks, “Where is your school?” What should you do?', qid:'Orang asing di obrolan game online bertanya, “Di mana sekolahmu?” Apa yang harus kamu lakukan?', opts:['Type your school address quickly.','Keep it private and do not share it.','Tell them your phone number instead.'], a:1, fb:'Great job! Your school name and address are private information. Keeping them secret protects your safety!'},
+    {type:'blank', before:'My password is', after:'.', qid:'Pilih kata yang tepat.', opts:['private','public'], a:0, fb:'Correct! My password is private.'}
+  ]
+};
+
+/* ---------- art for module 8 ---------- */
+function lab(){
+  return `<rect width="800" height="450" fill="#f3e2c2"/>
+  <g stroke="#dcc49c" stroke-width="2">${[70,110,150,190,230,270,310,350].map(yy=>`<path d="M0 ${yy} H800"/>`).join('')}</g>
+  <rect x="0" y="0" width="800" height="34" fill="#23935f"/>
+  <g fill="#f6b21b" stroke="${OUTLINE}" stroke-width="1.5">${Array.from({length:27},(_,i)=>`<path d="M${i*30} 34 L${i*30+30} 34 L${i*30+15} 54Z"/>`).join('')}</g>
+  <g transform="translate(470 82)">
+    <rect width="260" height="170" fill="#9fd6ff" stroke="${OUTLINE}" stroke-width="4"/>
+    <circle cx="210" cy="40" r="20" fill="#ffd56b"/>
+    <rect y="112" width="260" height="58" fill="#4f8fd1"/>
+    <path d="M0 114 Q40 106 80 114 T160 114 T260 114" stroke="#cfe9ff" stroke-width="3" fill="none"/>
+    <g transform="translate(26 36)" stroke="${OUTLINE}" stroke-width="2">
+      <path d="M0 30 L40 2 L80 30Z" fill="#7a4a25"/><path d="M40 2 L33 -9 M40 2 L47 -9" stroke-width="3"/>
+      <rect x="8" y="30" width="64" height="36" fill="#d29a62"/><rect x="31" y="40" width="14" height="26" fill="#5a3216"/>
+      <path d="M14 66 V80 M40 66 V80 M66 66 V80" stroke="#5a3216" stroke-width="4"/>
+    </g>
+    <path d="M150 128 Q185 140 222 128 L215 137 Q185 146 157 137Z" fill="#a0652f" stroke="${OUTLINE}" stroke-width="2"/>
+    <path d="M130 0 V170" stroke="${OUTLINE}" stroke-width="4"/>
+    <path d="M-16 -8 H34 Q12 80 -16 180Z" fill="#f6b21b" stroke="${OUTLINE}" stroke-width="2.5"/>
+    <path d="M276 -8 H226 Q248 80 276 180Z" fill="#f6b21b" stroke="${OUTLINE}" stroke-width="2.5"/>
+  </g>
+  <rect x="0" y="380" width="800" height="70" fill="#b98b5c"/>
+  <path d="M0 412 H800" stroke="#9c7248" stroke-width="2"/>`;
+}
+function desk(x,w){
+  return `<rect x="${x+18}" y="306" width="16" height="92" fill="#6b3f1f" stroke="${OUTLINE}" stroke-width="2"/><rect x="${x+w-34}" y="306" width="16" height="92" fill="#6b3f1f" stroke="${OUTLINE}" stroke-width="2"/>
+  <rect x="${x}" y="288" width="${w}" height="20" rx="4" fill="#8a5428" stroke="${OUTLINE}" stroke-width="3"/>`;
+}
+function monitor(x,y,inner){
+  return `<g transform="translate(${x} ${y})"><rect x="88" y="128" width="24" height="18" fill="#2b2f4a"/><rect x="60" y="144" width="80" height="8" rx="3" fill="#2b2f4a" stroke="${OUTLINE}" stroke-width="2"/>
+  <rect width="200" height="130" rx="10" fill="#2b2f4a" stroke="${OUTLINE}" stroke-width="3"/><rect x="10" y="10" width="180" height="104" rx="4" fill="#eaf3ff"/>${inner}</g>`;
+}
+const MATH_SCREEN = `<rect x="10" y="10" width="180" height="22" rx="4" fill="#2a3990"/><text x="100" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">MATH QUEST</text>
+  <text x="100" y="66" text-anchor="middle" font-size="27" font-weight="800" fill="#2a3990">7 + 5 = ?</text>
+  ${[[52,'11'],[100,'12'],[148,'13']].map(([cx,t])=>`<circle cx="${cx}" cy="92" r="14" fill="#f6b21b" stroke="${INK}" stroke-width="2"/><text x="${cx}" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="${INK}">${t}</text>`).join('')}`;
+function palace(x,y,s=1){
+  const st = `stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round"`;
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+    <path d="M8 40 V24 Q18 9 28 24 V40Z" fill="#fdf6e8" ${st}/><path d="M72 40 V24 Q82 9 92 24 V40Z" fill="#fdf6e8" ${st}/>
+    <path d="M37 40 V18 Q50 -1 63 18 V40Z" fill="#fdf6e8" ${st}/>
+    <circle cx="18" cy="11" r="2.6" fill="#f6b21b"/><circle cx="82" cy="11" r="2.6" fill="#f6b21b"/><circle cx="50" cy="2" r="3.2" fill="#f6b21b"/>
+    <rect x="0" y="40" width="100" height="56" fill="#fdf6e8" ${st}/>
+    <rect x="0" y="40" width="100" height="6" fill="#f6b21b" ${st}/>
+    <path d="M12 92 V70 Q22 57 32 70 V92Z M40 92 V70 Q50 57 60 70 V92Z M68 92 V70 Q78 57 88 70 V92Z" fill="#2a3990" ${st}/>
+    <rect x="-8" y="92" width="116" height="8" fill="#d9b48a" ${st}/>
+  </g>`;
+}
+const STARG = (x,y,s) => `<g transform="translate(${x} ${y}) scale(${s})">${STAR().replace(/<\/?svg[^>]*>/g,'')}</g>`;
+Object.assign(SCENES, {
+  m8s1:()=>`${lab()}
+    ${person({...CAST.ahmad,x:150,y:111,s:1.3,mouth:'smile'})}
+    ${desk(90,580)}
+    ${monitor(380,136,MATH_SCREEN)}
+    <rect x="160" y="276" width="150" height="14" rx="4" fill="#5d6596" stroke="${OUTLINE}" stroke-width="2"/>
+    <rect x="322" y="276" width="26" height="14" rx="7" fill="#5d6596" stroke="${OUTLINE}" stroke-width="2"/>`,
+  m8s2:()=>`<rect width="800" height="450" fill="#2a3990"/><rect width="800" height="450" fill="url(#kawung)"/>
+    <rect x="90" y="22" width="620" height="390" rx="26" fill="#1c2147" stroke="#000" stroke-width="3"/>
+    <rect x="110" y="42" width="580" height="340" rx="10" fill="#eaf3ff"/>
+    <rect x="110" y="42" width="580" height="42" rx="10" fill="#2a3990"/><text x="200" y="71" text-anchor="middle" font-size="22" font-weight="800" fill="#fff">MATH QUEST</text>
+    <text x="250" y="190" text-anchor="middle" font-size="54" font-weight="800" fill="#2a3990">12 + 8 = ?</text>
+    ${[[170,'18'],[250,'20'],[330,'22']].map(([cx,t])=>`<circle cx="${cx}" cy="270" r="32" fill="#f6b21b" stroke="${INK}" stroke-width="3"/><text x="${cx}" y="281" text-anchor="middle" font-size="28" font-weight="800" fill="${INK}">${t}</text>`).join('')}
+    <g transform="translate(400 96)">
+      <rect class="glowpulse" x="-14" y="-14" width="300" height="214" rx="28" fill="#f6b21b" opacity=".45"/>
+      <rect width="272" height="186" rx="18" fill="#fff" stroke="${INK}" stroke-width="3"/>
+      <circle cx="30" cy="30" r="16" fill="#f6b21b" stroke="${INK}" stroke-width="2"/><path d="M23 35 Q23 21 30 21 Q37 21 37 35Z M27 37 H33" fill="${INK}" stroke="${INK}" stroke-width="1.5"/>
+      <text x="56" y="27" font-size="12" font-weight="700" fill="#565c82" font-family="Andika, sans-serif">From:</text>
+      <text x="56" y="44" font-size="13" font-weight="700" fill="#d9434f" font-family="Andika, sans-serif">prize-winner@fr33-g1fts.xyz</text>
+      <text x="136" y="82" text-anchor="middle" font-size="25" font-weight="800" fill="${INK}">Congratulations!</text>
+      <text x="136" y="108" text-anchor="middle" font-size="14" font-weight="700" fill="${INK}" font-family="Andika, sans-serif">Click here to get a free smartphone!</text>
+      <rect x="66" y="126" width="140" height="40" rx="12" fill="#d9434f" stroke="${INK}" stroke-width="2.5"/>
+      <text x="136" y="153" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">CLICK HERE</text>
+    </g>
+    <g transform="translate(-6 268)">${person({...CAST.ahmad,x:0,y:0,s:.95,mouth:'o'})}</g>`,
+  m8s3:()=>`${lab()}
+    ${person({...CAST.ahmad,x:70,y:111,s:1.3,mouth:'think'})}
+    ${desk(30,420)}
+    ${monitor(250,136,`<rect x="26" y="26" width="148" height="72" rx="8" fill="#fff" stroke="${INK}" stroke-width="2"/><text x="100" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#d9434f" font-family="Andika, sans-serif">fr33-g1fts.xyz</text><rect x="62" y="66" width="76" height="20" rx="6" fill="#d9434f"/>`)}
+    <circle cx="210" cy="118" r="8" fill="#fff" stroke="${OUTLINE}" stroke-width="2.5"/><circle cx="242" cy="94" r="13" fill="#fff" stroke="${OUTLINE}" stroke-width="2.5"/>
+    <ellipse cx="560" cy="102" rx="222" ry="80" fill="#fff" stroke="${OUTLINE}" stroke-width="3"/>
+    <g transform="translate(395 52)">${person({...CAST.teacher,x:0,y:0,s:.48,mouth:'smile'})}</g>
+    <text x="610" y="96" text-anchor="middle" font-size="30" font-weight="800" fill="${INK}">Think before</text>
+    <text x="610" y="132" text-anchor="middle" font-size="30" font-weight="800" fill="${INK}">you click!</text>
+    <g transform="translate(560 270)">
+      <path d="M46 46 L92 92" stroke="#7a4a25" stroke-width="16" stroke-linecap="round"/>
+      <circle r="66" fill="#fff" stroke="${INK}" stroke-width="8"/>
+      <text y="-6" text-anchor="middle" font-size="24" font-weight="800" fill="#d9434f">fr33-g1fts</text>
+      <text y="26" text-anchor="middle" font-size="24" font-weight="800" fill="#d9434f">.xyz ?</text>
+    </g>`,
+  m8s4:()=>`${lab()}
+    ${desk(500,280)}
+    ${monitor(540,136,`<g transform="translate(76 22) scale(.75)"><g stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" fill="none">${ICONS.trash}</g></g><text x="100" y="104" text-anchor="middle" font-size="14" font-weight="800" fill="#23935f">Message deleted</text>`)}
+    ${person({...CAST.teacher,x:110,y:95,s:1.42,arms:'thumb',mouth:'grin'})}
+    ${person({...CAST.ahmad,x:330,y:111,s:1.3,arms:'wave',mouth:'grin'})}
+    ${speech(30,18,280,96,['Thank you for','showing me, Ahmad!'],'left',23)}
+    ${STARG(498,120,.45)}${STARG(300,150,.35)}`,
+  m8win:()=>`<rect width="800" height="450" fill="url(#sky)"/>
+    <path d="M0 330 Q200 300 400 330 T800 320 V450 H0Z" fill="#4f8fd1"/>
+    <path d="M0 336 Q100 326 200 336 T400 336 T600 336 T800 336" stroke="#cfe9ff" stroke-width="3" fill="none"/>
+    <path d="M0 300 H800 V336 Q600 326 400 336 T0 330Z" fill="#9fd3a8"/>
+    ${palace(250,64,2.6)}
+    ${person({...CAST.ahmad,x:60,y:70,s:1.1,arms:'wave',mouth:'grin'})}
+    <g transform="translate(640 212) scale(.9)">${kancil(0,0,1)}</g>
+    ${STARG(200,60,.6)}${STARG(560,40,.5)}${STARG(640,140,.4)}`
+});
+
+/* ---------- module 7 extra fields ---------- */
+Object.assign(CONTENT[7], {
+  gameType:'sort',
+  guideIntro:['Hi! I am Kancil, your guide. Let’s read about Sri. Tap “Read aloud” to listen.','Halo! Aku Kancil, pemandumu. Ayo baca cerita tentang Sri. Ketuk “Read aloud” untuk mendengarkan.'],
+  vocabIntro:['Learn six words about personal information. Tap every card!','Pelajari enam kata tentang informasi pribadi. Ketuk semua kartunya!'],
+  badgeLine:['You know how to keep your personal information private.','Kamu tahu cara menjaga informasi pribadimu.'],
+  setting:'Yogyakarta, Java: Sri wears kebaya and batik parang on the porch of a joglo house',
+  extra:{tablet:['A small computer with a touch screen.','tablet (komputer kecil berlayar sentuh)']},
+  drill:{title:'My, your, his, or her?', idh:'my = milikku, your = milikmu, his = miliknya (laki-laki), her = miliknya (perempuan)', opts:['my','your','his','her'],
+    items:CONTENT[7].possessive.map(p=>({...p, fb:`Yes! ${p.q.replace('____',['My','your','His','Her'][p.a])}`}))},
+  gameKey(){ const G=this.game; return `<ul><li><b>Private Vault:</b> ${G.cards.filter(c=>c.zone==='vault').map(c=>c.t+(c.extra?'*':'')).join(', ')}</li>
+    <li><b>Safe Share:</b> ${G.cards.filter(c=>c.zone==='share').map(c=>c.t+(c.extra?'*':'')).join(', ')}</li></ul>
+    <p style="font-size:15px;color:var(--muted);margin-top:4px">* Extra practice cards added to the five cards in the curriculum manual. The original Wordwall Group Sort is rebuilt inside the website, so students never leave the page.</p>`; }
+});
+Object.assign(CONTENT[7].game, {unit:'right on the first try', starRule:'6 of 8 cards right on the first try'});
+
+/* ---------- module 8 ---------- */
+CONTENT[8] = {
+  gameType:'quest',
+  value:'Bernalar Kritis (Critical Thinking) & Caution (Carefulness in action)',
+  focus:'Imperative Sentences (Don’t click! / Think before...)',
+  objectives:['Students can spot suspicious links and messages.','Students can express warnings and safety rules using imperative sentences.'],
+  setting:'Riau, Sumatra: Ahmad wears a teluk belanga shirt, peci and songket in a school computer room with Malay lebah bergantung trim and a river view; the quest ends at Istana Siak',
+  storyTitle:'Ahmad’s Strange Message',
+  guideIntro:['Hello again! Today we meet Ahmad from Riau. Tap “Read aloud” to listen.','Halo lagi! Hari ini kita bertemu Ahmad dari Riau. Ketuk “Read aloud” untuk mendengarkan.'],
+  vocabIntro:['Learn six words about online messages. Tap every card!','Pelajari enam kata tentang pesan online. Ketuk semua kartunya!'],
+  badgeLine:['You know how to spot suspicious messages and think before you click.','Kamu tahu cara mengenali pesan mencurigakan dan berpikir sebelum mengklik.'],
+  story:[
+    {scene:'m8s1', alt:'Ahmad in a teluk belanga shirt and peci sits at a computer playing a math game.', text:'Ahmad is playing an online math game on his [computer].', id:'Ahmad sedang bermain game matematika online di komputernya.'},
+    {scene:'m8s2', alt:'A glowing notification on the math game says congratulations, click here to get a free smartphone.', text:'Suddenly, a glowing [notification] pops up. The [message] says: “Congratulations! [Click] here to get a free smartphone!”', id:'Tiba-tiba, sebuah notifikasi bercahaya muncul. Pesannya berbunyi: “Selamat! Klik di sini untuk mendapatkan smartphone gratis!”'},
+    {scene:'m8s3', alt:'Ahmad looks closely at the strange sender address and remembers his teacher saying think before you click.', text:'Ahmad pauses and looks closely at the sender’s address. It looks [strange] and [unfamiliar]. He remembers his teacher’s rule: “Think before you [click]!”', id:'Ahmad berhenti sejenak dan memperhatikan alamat pengirimnya. Alamat itu tampak aneh dan tidak dikenal. Ia ingat aturan gurunya: “Pikir dulu sebelum mengklik!”'},
+    {scene:'m8s4', alt:'Ahmad shows his teacher the deleted message. The teacher gives a thumbs up.', text:'Ahmad [deletes] the message without clicking it and shows it to his [teacher].', id:'Ahmad menghapus pesan itu tanpa mengkliknya dan menunjukkannya kepada gurunya.'}
+  ],
+  wordMap:{click:'Click', message:'Message', strange:'Suspicious', unfamiliar:'Stranger', deletes:'Delete'},
+  extra:{
+    computer:['A machine you use to learn, play and write.','komputer'],
+    notification:['A short message that pops up on a screen.','notifikasi'],
+    teacher:['The person who teaches you at school. A trusted adult.','guru, orang dewasa yang dipercaya']
+  },
+  comprehension:[
+    {q:'What game is Ahmad playing when the message appears?', qid:'Game apa yang sedang dimainkan Ahmad ketika pesan itu muncul?', opts:['An online math game','A football game','A car racing game'], a:0, fb:'Yes! Ahmad is playing an online math game.'},
+    {q:'What does the strange message promise to give Ahmad?', qid:'Apa yang dijanjikan pesan aneh itu kepada Ahmad?', opts:['A free bicycle','A free smartphone','A free book'], a:1, fb:'Correct! It promises a free smartphone.'},
+    {q:'What rule does Ahmad remember before taking action?', qid:'Aturan apa yang Ahmad ingat sebelum bertindak?', opts:['“Click everything fast!”','“Share it with your friends!”','“Think before you click!”'], a:2, fb:'Well done! Ahmad remembers: “Think before you click!”'}
+  ],
+  vocab:[
+    {w:'Click', icon:'cursor', id:'klik', ex:'Think before you click!'},
+    {w:'Link', icon:'chain', id:'tautan', ex:'Don’t click suspicious links!'},
+    {w:'Message', icon:'envelope', id:'pesan', ex:'Ahmad gets a strange message.'},
+    {w:'Stranger', icon:'stranger', id:'orang asing', ex:'Don’t reply to strangers online.'},
+    {w:'Suspicious', icon:'magnifier', id:'mencurigakan', ex:'The sender looks suspicious.'},
+    {w:'Delete', icon:'trash', id:'hapus', ex:'Ahmad deletes the message.'}
+  ],
+  patterns:['<b>Don’t click</b> suspicious links!','<b>Think</b> before you click!','<b>Ask</b> your teacher for help.'],
+  sentences:['Don’t click suspicious links!','Think before you click!','Ask your teacher for help.'],
+  drill:{title:'Do or Don’t?', idh:'Do = lakukan, Don’t = jangan lakukan', opts:['Do','Don’t'], items:[
+    {q:'____ click links from strangers.', qid:'Mengklik tautan dari orang asing.', a:1, fb:'Yes! Don’t click links from strangers.'},
+    {q:'____ look closely at the sender.', qid:'Memperhatikan pengirim pesan dengan teliti.', a:0, fb:'Yes! Look closely at the sender.'},
+    {q:'____ ask a trusted adult for help.', qid:'Meminta bantuan orang dewasa yang dipercaya.', a:0, fb:'Yes! Ask a trusted adult for help.'},
+    {q:'____ forward strange messages to your friends.', qid:'Meneruskan pesan aneh ke teman-teman.', a:1, fb:'Yes! Don’t forward strange messages to your friends.'}
+  ]},
+  game:{
+    title:'Safe Click Quest', unit:'safe on the first try', starRule:'3 of 4 messages handled safely on the first try',
+    scenes:[
+      {level:'Level 1', device:'Computer · Math game', sender:'prize-winner@fr33-g1fts.xyz', note:'Unknown sender', avatar:'?',
+        text:'Congratulations! Click here to get a free smartphone!', link:'fr33-g1fts.xyz/claim-now',
+        clues:['The sender’s address looks strange.','A free smartphone is too good to be true.','It wants you to click a link.'],
+        cluesId:['Alamat pengirim tampak aneh.','Smartphone gratis terlalu bagus untuk jadi kenyataan.','Pesan itu menyuruhmu mengklik tautan.']},
+      {level:'Level 2', device:'Game chat', sender:'MathKing_9921', note:'A player you do not know', avatar:'M',
+        text:'Want 1000 free coins? Click this link and type your password!', link:'free-coins.win/get',
+        clues:['A stranger is sending you a link.','It asks for your password.','Free coins are a trick to make you click.'],
+        cluesId:['Orang asing mengirimimu tautan.','Pesan itu meminta kata sandimu.','Koin gratis adalah trik agar kamu mengklik.']},
+      {level:'Level 3', device:'Text message', sender:'+62 811 0000 4417', note:'Not in your contacts', avatar:'#',
+        text:'Your game account will be closed TODAY! Click now to save it!', link:'game-safe-check.co/login',
+        clues:['The number is unfamiliar.','It tries to scare you and make you hurry.','The link asks you to log in.'],
+        cluesId:['Nomornya tidak dikenal.','Pesan itu menakut-nakuti dan membuatmu terburu-buru.','Tautannya memintamu masuk ke akun.']},
+      {level:'Level 4', device:'Chat · Friend', sender:'Rizky (classmate)', note:'Your friend, but the message is strange', avatar:'R',
+        text:'Is this you in this funny video??? Click it fast!', link:'vld-eo.watch/x9k2',
+        clues:['Your friend never writes like this. The account may be hacked.','The link looks strange.','It tells you to hurry.'],
+        cluesId:['Temanmu tidak pernah menulis seperti ini. Akunnya mungkin dibobol.','Tautannya tampak aneh.','Pesan itu menyuruhmu terburu-buru.']}
+    ],
+    out:{
+      click:['Oops! Stop!','That link could be a trap. It can steal your information or harm the computer. Think again and choose another action.','Ups! Tautan itu bisa jadi jebakan yang mencuri informasimu atau merusak komputer. Pikirkan lagi dan pilih tindakan lain.'],
+      del:['Safe choice!','You did not click. Deleting the message keeps you safe. You can also show it to a trusted adult.','Pilihan aman! Kamu tidak mengklik. Kamu juga bisa menunjukkannya kepada orang dewasa yang kamu percaya.'],
+      ask:['Excellent choice!','A trusted adult can help you check, block, and report the message. This is the best action.','Pilihan terbaik! Orang dewasa yang kamu percaya bisa membantu memeriksa, memblokir, dan melaporkan pesan itu.']
+    }
+  },
+  gameKey(){ return `<p>For every message: <b>Ask Adult</b> = best action (2 points), <b>Ignore &amp; Delete</b> = safe (1 point), <b>Click Link</b> = unsafe (0 points; the student chooses again).</p>
+    <ol>${this.game.scenes.map(s=>`<li>${s.device}: “${s.text}”<br><span style="color:var(--muted)">Clues: ${s.clues.join(' ')}</span></li>`).join('')}</ol>
+    <p style="font-size:15px;color:var(--muted);margin-top:4px">The Genially Interactive Scenario is rebuilt inside the website. Levels 2 to 4 are added scenarios that follow the same rule as the story. The links are plain text and cannot be opened.</p>`; },
+  assess:[
+    {type:'mc', q:'You receive a message from an unknown account saying, “Click this link to see a secret video!” What is the best action?', qid:'Kamu menerima pesan dari akun tak dikenal: “Klik tautan ini untuk melihat video rahasia!” Apa tindakan terbaik?', opts:['Click the link right away.','Avoid clicking it and report to a trusted adult.','Forward the message to all your friends.'], a:1, fb:'Excellent! Unknown links can be dangerous. Always think and ask an adult before clicking!'},
+    {type:'blank', before:'', after:' strange links from unknown senders!', qid:'Lengkapi kalimat dengan pilihan yang tepat.', opts:['Do not click','Click'], a:0, fb:'Correct! Do not click strange links from unknown senders!'}
+  ]
+};
+
+/* ---------- quest game ---------- */
+function questGame(stage, M, meta, run, api){
+  const G = M.game; let idx = 0, points = 0, safeFirst = 0, tried = false;
+  const CH = [['click','cursor','Click Link','Open the link'],['del','trash','Ignore & Delete','Do not open it. Delete it.'],['ask','adult','Ask Adult','Show a parent or teacher.']];
+  stage.innerHTML = `<div class="step-intro"><h2>${G.title}</h2><p>Read each message carefully. Then choose what Ahmad should do. Safe choices move Ahmad closer to Istana Siak.</p>${idh('Baca setiap pesan dengan teliti, lalu pilih tindakan Ahmad. Pilihan yang aman membawa Ahmad lebih dekat ke Istana Siak.')}</div>
+    <div class="qpath" id="qpath"></div>
+    <div class="quest"><div id="qdev"></div><div id="qside"></div></div>
+    ${api.nextBar('Next: Check')}`;
+  api.bindNext();
+  say('Look closely at each message. Then choose: click, delete, or ask an adult?','Perhatikan setiap pesan. Lalu pilih: klik, hapus, atau tanya orang dewasa?');
+  function path(){
+    const xs = [70,190,310,430]; const n = G.scenes.length;
+    const ax = idx < n ? xs[idx] : 520;
+    return `<svg viewBox="0 0 680 140" role="img" aria-label="Quest path: level ${Math.min(idx+1,n)} of ${n}">
+      <path d="M30 112 H590" stroke="#b6bad6" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 15"/>
+      ${xs.map((x,i)=>`<g transform="translate(${x} 112)"><circle r="18" fill="${i<idx?'#f6b21b':'#fff'}" stroke="${INK}" stroke-width="3"/><text y="6" text-anchor="middle" font-size="17" font-weight="800" fill="${INK}">${i+1}</text></g>`).join('')}
+      ${palace(560,8,1)}<text x="610" y="134" text-anchor="middle" font-size="14" font-weight="800" fill="${INK}">Istana Siak</text>
+      ${person({...CAST.ahmad, x:ax-18, y:20, s:.3, mouth: idx<n?'smile':'grin'})}
+    </svg>`;
+  }
+  function scene(){
+    const s = G.scenes[idx]; tried = false;
+    $('#qpath').innerHTML = path();
+    $('#qdev').innerHTML = `<div class="device"><div class="device-bar"><i></i><i></i><i></i><span>${s.device}</span></div>
+      <div class="screen"><div class="msg glow"><div class="from"><span class="avatar">${s.avatar}</span><div><b>${s.sender}</b><small>${s.note}</small></div></div>
+      <p class="msg-text">${s.text}</p><span class="fake-link">${s.link}</span></div></div></div>
+      <button class="btn sec sm" id="qlisten" style="margin-top:14px">${SPK} Listen to the message</button>`;
+    $('#qlisten').onclick = () => Speech.say(`A message from ${s.sender.replace(/[_@.]/g,' ')}. ${s.text}`);
+    choices();
+  }
+  function choices(){
+    const s = G.scenes[idx];
+    $('#qside').innerHTML = `<p class="panel-count">${s.level} of ${G.scenes.length} · What should Ahmad do?</p>${idh('Apa yang harus Ahmad lakukan?')}
+      <div class="choices" style="margin-top:10px">${CH.map(([k,ic,l,sub])=>`<button class="choice" data-k="${k}" ${k==='click'&&tried?'disabled':''}>${icon(ic,48)}<span>${l}<small>${sub}</small></span></button>`).join('')}</div>`;
+    $$('.choice', stage).forEach(b=>b.onclick=()=>choose(b.dataset.k));
+  }
+  function choose(k){
+    const s = G.scenes[idx]; const [title,msg,mid] = G.out[k];
+    if(k==='click'){
+      tried = true; sfx.bad();
+      $('#qside').innerHTML = `<div class="result oops" role="status"><h3>${title}</h3><p>${msg}</p>${idh(mid)}<div class="b-actions"><button class="btn" id="qretry">Choose again</button></div></div>`;
+      say(msg, mid); Speech.say(title+' '+msg);
+      $('#qretry').onclick = choices; return;
+    }
+    const got = k==='ask' ? 2 : 1; points += got; if(!tried) safeFirst++;
+    sfx.good();
+    const last = idx === G.scenes.length-1;
+    $('.msg', stage).classList.remove('glow');
+    $('#qside').innerHTML = `<div class="result ${k==='ask'?'best':'safe'}" role="status"><h3>${title}</h3><p>${msg}</p>${idh(mid)}
+      <div class="pts">${Array.from({length:got},()=>STAR()).join('')} +${got} ${got===1?'point':'points'}</div>
+      <h4 style="margin-top:14px;font-size:20px">Clues you can spot</h4>${idh('Petunjuk yang bisa kamu temukan')}
+      <ul class="clues">${s.clues.map((c,i)=>`<li>${icon('magnifier',24)}<span>${c}${idh(s.cluesId[i],'span')}</span></li>`).join('')}</ul>
+      <div class="b-actions"><button class="btn" id="qnext">${last?'Reach Istana Siak →':'Next message →'}</button></div></div>`;
+    say(`${title} ${msg}`, mid); Speech.say(`${title} ${msg}`);
+    $('#qnext').onclick = () => { idx++; if(idx < G.scenes.length) scene(); else finish(); };
+  }
+  function finish(){
+    const n = G.scenes.length;
+    run.game = safeFirst/n; run.gameGot = safeFirst; run.gameTotal = n; api.complete('game');
+    $('#qpath').innerHTML = path();
+    $('#qdev').innerHTML = `<div class="panel">${sceneSVG('m8win','Ahmad arrives safely at Istana Siak')}</div>`;
+    $('#qside').innerHTML = `<div class="result best" role="status"><h3>Quest complete!</h3><p>Ahmad reached Istana Siak safely. You earned ${points} of ${n*2} points. ${safeFirst} of ${n} messages were handled safely on the first try.</p>${idh('Ahmad tiba di Istana Siak dengan selamat.')}</div>`;
+    sfx.star(); say('Hooray! Ahmad is safe. Remember: think before you click!','Hore! Ahmad aman. Ingat: pikir dulu sebelum mengklik!');
+  }
+  scene();
+}
+
+/* ---------- art for module 9 ---------- */
+const BOOKC = ['#d9434f','#2a3990','#23935f','#f6b21b','#7a4a25','#5d1f5f','#1a56d6','#e8833a'];
+function shelf(x,y,w,h){
+  let books='';
+  [0,1,2,3].forEach(r=>{
+    let bx = x+10; const by = y+12+r*(h-20)/4; const bh = (h-20)/4-10; let k = r*3;
+    while(bx < x+w-28){ const bw = 12 + ((k*7)%9); const tall = bh - ((k*5)%8);
+      books += `<rect x="${bx}" y="${by+bh-tall}" width="${bw}" height="${tall}" fill="${BOOKC[k%BOOKC.length]}" stroke="${OUTLINE}" stroke-width="1.5"/>`; bx += bw+2; k++; }
+    books += `<rect x="${x+6}" y="${by+bh}" width="${w-12}" height="7" fill="#6b3f1f"/>`;
+  });
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#8a5428" stroke="${OUTLINE}" stroke-width="3"/><rect x="${x+6}" y="${y+6}" width="${w-12}" height="${h-12}" fill="#5a3216"/>${books}`;
+}
+function hornbill(x,y,s=1){
+  return `<g transform="translate(${x} ${y}) scale(${s})" stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round">
+    <rect width="160" height="120" fill="#fff4dc" stroke-width="5"/>
+    <path d="M14 102 Q60 70 140 80" stroke="#7a4a25" stroke-width="6" fill="none"/>
+    <path d="M44 66 L12 94 L24 100 L52 76Z" fill="#fff"/><path d="M30 80 L20 89 L27 92 L36 84Z" fill="#1c1c1c" stroke="none"/>
+    <ellipse cx="72" cy="64" rx="30" ry="19" fill="#1c1c1c"/>
+    <circle cx="99" cy="46" r="13" fill="#1c1c1c"/>
+    <path d="M107 44 Q140 40 152 58 Q130 54 107 54Z" fill="#f6b21b"/>
+    <path d="M103 37 Q122 25 140 39 Q122 37 108 43Z" fill="#d9434f"/>
+    <circle cx="101" cy="44" r="3.2" fill="#fff" stroke="none"/><circle cx="101.5" cy="44" r="1.5" fill="#000" stroke="none"/>
+  </g>`;
+}
+function library(){
+  return `<rect width="800" height="450" fill="#f6ead2"/>
+  <rect x="0" y="0" width="800" height="40" fill="url(#dayak)"/><rect x="0" y="40" width="800" height="4" fill="#1c1c1c"/>
+  ${shelf(18,70,200,312)}
+  ${hornbill(612,62,1)}
+  <rect x="0" y="382" width="800" height="68" fill="#c9a26b"/><path d="M0 412 H800" stroke="#a9834f" stroke-width="2"/>`;
+}
+function schoolYard(){
+  return `<rect width="800" height="450" fill="url(#sky)"/><circle cx="90" cy="64" r="30" fill="#ffd56b"/>
+  <g stroke="${OUTLINE}" stroke-width="3" stroke-linejoin="round">
+    <path d="M300 120 L800 120 L800 98 L330 98Z" fill="#b5462f"/>
+    <rect x="300" y="120" width="500" height="18" fill="url(#dayak)"/>
+    <rect x="300" y="138" width="500" height="200" fill="#fff7e8"/>
+    ${[340,450,560,670].map(x=>`<rect x="${x}" y="168" width="70" height="56" fill="#9fd6ff"/><path d="M${x+35} 168 V224" stroke-width="2"/>`).join('')}
+    <rect x="740" y="236" width="50" height="102" fill="#7a4a25"/>
+  </g>
+  <path d="M250 336 V78" stroke="#8a8fae" stroke-width="5"/><rect x="252" y="80" width="54" height="17" fill="#d9434f"/><rect x="252" y="97" width="54" height="17" fill="#fff" stroke="#ccc"/>
+  <rect x="0" y="330" width="800" height="120" fill="#c9a26b"/><rect x="0" y="326" width="800" height="10" fill="#7cc58f"/>
+  <g stroke="${OUTLINE}" stroke-width="3"><rect x="44" y="200" width="22" height="132" fill="#7a4a25"/><circle cx="55" cy="170" r="54" fill="#3f9a5d"/><circle cx="20" cy="200" r="32" fill="#4fae6a"/><circle cx="96" cy="196" r="34" fill="#4fae6a"/></g>`;
+}
+const LIB_SCREEN = `<rect x="10" y="10" width="180" height="22" rx="4" fill="#23935f"/><text x="100" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">SCHOOL LIBRARY</text>
+  <circle cx="52" cy="70" r="20" fill="#d4d8ee" stroke="${INK}" stroke-width="2"/><circle cx="52" cy="64" r="7" fill="#b9784b"/><path d="M38 84 Q52 70 66 84" fill="#2f4f9e"/>
+  <text x="84" y="62" font-size="13" font-weight="800" fill="${INK}">New account</text><text x="84" y="82" font-size="15" font-weight="800" fill="#23935f">Ahmad ✓</text>
+  <rect x="84" y="92" width="92" height="12" rx="4" fill="#e1e3ef"/>`;
+Object.assign(CAST, {
+  ahmadSchool:{...CAST.ahmad, top:'url(#batikBlue)', pants:'#c0262d', sarong:false},
+  peer:{type:'boy', style:'short', skin:'#d29a6a', hair:'#2a1a12', top:'url(#batikBlue)', pants:'#c0262d', sarong:false}
+});
+Object.assign(SCENES, {
+  m9s1:()=>`${library()}
+    ${person({...CAST.ahmadSchool,x:250,y:111,s:1.3})}
+    ${desk(222,548)}
+    ${monitor(440,136,LIB_SCREEN)}
+    <rect x="300" y="276" width="120" height="14" rx="4" fill="#5d6596" stroke="${OUTLINE}" stroke-width="2"/>`,
+  m9s2:()=>`<rect width="800" height="450" fill="#2a3990"/><rect width="800" height="450" fill="url(#kawung)"/>
+    <rect x="90" y="22" width="620" height="390" rx="26" fill="#1c2147" stroke="#000" stroke-width="3"/>
+    <rect x="110" y="42" width="580" height="340" rx="10" fill="#eaf3ff"/>
+    <rect x="110" y="42" width="580" height="42" rx="10" fill="#23935f"/><text x="400" y="71" text-anchor="middle" font-size="21" font-weight="800" fill="#fff">SCHOOL DIGITAL LIBRARY</text>
+    <text x="250" y="124" font-size="24" font-weight="800" fill="${INK}">Create your password</text>
+    <rect x="250" y="138" width="380" height="50" rx="10" fill="#fff" stroke="${INK}" stroke-width="3"/>
+    ${Array.from({length:12},(_,i)=>`<circle cx="${276+i*24}" cy="163" r="7" fill="${INK}"/>`).join('')}
+    ${[0,1,2,3].map(i=>`<rect x="${250+i*62}" y="204" width="56" height="14" rx="4" fill="#23935f" stroke="${INK}" stroke-width="2"/>`).join('')}
+    <text x="508" y="217" font-size="20" font-weight="800" fill="#23935f">Strong</text>
+    ${['Letters','Numbers','Symbol','8 or more characters'].map((t,i)=>`<g transform="translate(${250+(i%2)*190} ${248+Math.floor(i/2)*44})"><circle cx="13" cy="0" r="13" fill="#23935f" stroke="${INK}" stroke-width="2"/><path d="M7 0 L11.5 4.5 L19 -5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><text x="34" y="7" font-size="19" font-weight="700" fill="${INK}" font-family="Andika, sans-serif">${t}</text></g>`).join('')}
+    <g transform="translate(-6 268)">${person({...CAST.ahmadSchool,x:0,y:0,s:.95,mouth:'grin'})}</g>`,
+  m9s3:()=>`${schoolYard()}
+    ${person({...CAST.ahmadSchool,x:150,y:106,s:1.3,arms:'hold',screen:'lock',mouth:'o'})}
+    ${person({...CAST.peer,x:470,y:106,s:1.3,arms:'wave',mouth:'smile'})}
+    ${speech(470,18,310,128,['Can I have your password','to play games on','your account?'],'left',22)}`,
+  m9s4:()=>`${schoolYard()}
+    ${person({...CAST.ahmadSchool,x:110,y:106,s:1.3,arms:'down',mouth:'smile'})}
+    ${person({...CAST.peer,x:540,y:106,s:1.3,arms:'thumb',mouth:'smile'})}
+    ${speech(14,16,330,96,['No, sorry. My password','is my personal protection.'],'left',22)}
+    <g transform="translate(340 214)" stroke="${OUTLINE}" stroke-width="3">
+      <path d="M20 96 V120 M110 96 V120" stroke="#6b3f1f" stroke-width="6"/>
+      <rect width="130" height="96" rx="6" fill="#23935f"/>
+      <rect x="28" y="16" width="74" height="62" fill="#ffe66b" stroke-width="2" transform="rotate(-4 65 47)"/>
+      <text x="65" y="44" text-anchor="middle" font-size="13" font-weight="800" fill="${INK}" stroke="none" transform="rotate(-4 65 47)">PASSWORD</text>
+      <text x="65" y="64" text-anchor="middle" font-size="14" font-weight="800" fill="${INK}" stroke="none" transform="rotate(-4 65 47)">* * * *</text>
+      <path d="M18 8 L112 88 M112 8 L18 88" stroke="#d9434f" stroke-width="8" stroke-linecap="round"/>
+    </g>`,
+});
+
+/* ---------- module 9 content ---------- */
+CONTENT[9] = {
+  gameType:'jump',
+  value:'Responsibility (Account responsibility) & Integrity (Honesty)',
+  focus:'Adjectives (strong, secure, secret) & Modal Verbs for Advice (should / shouldn’t)',
+  objectives:['Students can explain why strong passwords protect their accounts.','Students can give advice using should and shouldn’t.'],
+  setting:'Kalimantan: Ahmad wears his batik school uniform in a library with Dayak spiral motifs and a hornbill (enggang) painting; the game retells the folktale of Kancil and the crocodiles',
+  storyTitle:'The Secret Password',
+  guideIntro:['Welcome to Kalimantan! Ahmad has a new library account. Tap “Read aloud” to listen.','Selamat datang di Kalimantan! Ahmad punya akun perpustakaan baru. Ketuk “Read aloud” untuk mendengarkan.'],
+  vocabIntro:['Learn six words about passwords. Tap every card!','Pelajari enam kata tentang kata sandi. Ketuk semua kartunya!'],
+  badgeLine:['You know how to make a strong password and keep it secret.','Kamu tahu cara membuat kata sandi yang kuat dan merahasiakannya.'],
+  story:[
+    {scene:'m9s1', alt:'Ahmad in a batik school uniform sits at a library computer that shows his new account.', text:'Ahmad gets a new student [account] for his digital school [library].', id:'Ahmad mendapat akun siswa baru untuk perpustakaan digital sekolahnya.'},
+    {scene:'m9s2', alt:'The computer screen shows a hidden password with a strong rating: letters, numbers, a symbol and eight or more characters.', text:'He sets his [password] using a mix of [letters] and [numbers].', id:'Ia membuat kata sandi dengan campuran huruf dan angka.'},
+    {scene:'m9s3', alt:'In the schoolyard, a classmate asks Ahmad for his password to play games.', text:'During [break time], a [peer] asks, “Can I have your [password] to play games on your [account]?”', id:'Saat jam istirahat, seorang teman bertanya, “Boleh aku minta kata sandimu untuk main game di akunmu?”'},
+    {scene:'m9s4', alt:'Ahmad politely says no. A note with a password on a board is crossed out in red.', text:'Ahmad answers politely, “No, sorry. My [password] is my personal [protection].” Ahmad keeps his password [secret] and never writes it in [public places].', id:'Ahmad menjawab dengan sopan, “Maaf, tidak bisa. Kata sandiku adalah pelindung pribadiku.” Ahmad merahasiakan kata sandinya dan tidak pernah menuliskannya di tempat umum.'}
+  ],
+  wordMap:{account:'Account', password:'Password', protection:'Protect', secret:'Secret'},
+  extra:{
+    library:['A place with many books. A digital library keeps books on a computer.','perpustakaan'],
+    letters:['A, B, C and so on are letters.','huruf'],
+    numbers:['1, 2, 3 and so on are numbers.','angka'],
+    'break time':['A short rest between lessons.','jam istirahat'],
+    peer:['A friend who is the same age as you.','teman sebaya'],
+    'public places':['Places where many people can see, like a board or a desk.','tempat umum']
+  },
+  comprehension:[
+    {q:'What account does Ahmad create?', qid:'Akun apa yang dibuat Ahmad?', opts:['A game account','A digital school library account','A video account'], a:1, fb:'Yes! Ahmad creates a digital school library account.'},
+    {q:'What does his peer ask for during break time?', qid:'Apa yang diminta temannya saat jam istirahat?', opts:['His lunch','His library book','His password'], a:2, fb:'Correct! His peer asks for his password.'},
+    {q:'How does Ahmad answer his peer?', qid:'Bagaimana Ahmad menjawab temannya?', opts:['“No, sorry. My password is my personal protection.”','“Yes, here it is!”','“I will write it on the board.”'], a:0, fb:'Well done! Ahmad says, “No, sorry. My password is my personal protection.”'}
+  ],
+  vocab:[
+    {w:'Password', icon:'lock', id:'kata sandi', ex:'My password is secret.'},
+    {w:'Account', icon:'account', id:'akun', ex:'Ahmad has a library account.'},
+    {w:'Secure', icon:'shield', id:'aman', ex:'A strong password is secure.'},
+    {w:'Strong', icon:'meter', id:'kuat', ex:'K1d5#Safe2026 is a strong password.'},
+    {w:'Protect', icon:'umbrella', id:'melindungi', ex:'I should protect my password.'},
+    {w:'Secret', icon:'shh', id:'rahasia', ex:'Keep your password secret.'}
+  ],
+  patterns:['A <b>strong</b> password is <b>secure</b>.','I <b>should</b> protect my password.','I <b>shouldn’t</b> share my password with strangers.'],
+  sentences:['A strong password is secure.','I should protect my password.','I shouldn’t share my password with strangers.'],
+  drill:{title:'Should or shouldn’t?', idh:'should = sebaiknya, shouldn’t = sebaiknya tidak', opts:['should','shouldn’t'], items:[
+    {q:'I ____ use letters and numbers in my password.', qid:'Memakai huruf dan angka di kata sandi.', a:0, fb:'Yes! I should use letters and numbers in my password.'},
+    {q:'I ____ write my password on my desk.', qid:'Menulis kata sandi di meja.', a:1, fb:'Yes! I shouldn’t write my password on my desk.'},
+    {q:'I ____ keep my password secret.', qid:'Merahasiakan kata sandi.', a:0, fb:'Yes! I should keep my password secret.'},
+    {q:'I ____ use 123456 as my password.', qid:'Memakai 123456 sebagai kata sandi.', a:1, fb:'Yes! I shouldn’t use 123456 as my password.'}
+  ]},
+  game:{
+    title:'Password Detective', unit:'right on the first try', starRule:'5 of 6 crossings right on the first try',
+    intro:['In the old story, clever Kancil crossed the river on the backs of crocodiles. Today, only the crocodile with the strong and safe answer can hold Kancil. Choose A or B.','Dalam dongeng, Kancil yang cerdik menyeberangi sungai di atas punggung buaya. Hari ini, hanya buaya dengan jawaban yang kuat dan aman yang bisa dipijak Kancil. Pilih A atau B.'],
+    rounds:[
+      {kind:'pw', q:'Which password is stronger?', A:'123456', B:'K1d5#Safe2026', ans:'B', why:'K1d5#Safe2026 is long and mixes letters, numbers and symbols. 123456 is short and very easy to guess.', id:'K1d5#Safe2026 panjang dan mencampur huruf, angka, dan simbol. 123456 pendek dan sangat mudah ditebak.'},
+      {kind:'rule', q:'Which rule makes a password strong?', A:'Mix letters, numbers and symbols.', B:'Use only your name.', ans:'A', why:'Mixing letters, numbers and symbols makes a password hard to guess. Your name is easy to guess.', id:'Campuran huruf, angka, dan simbol membuat kata sandi sulit ditebak. Nama mudah ditebak.'},
+      {kind:'pw', q:'Which password is stronger?', A:'ahmad2015', B:'T!mun_Hijau48', ans:'B', why:'ahmad2015 is a name and a year, so people can guess it. T!mun_Hijau48 is long and mixed.', id:'ahmad2015 berisi nama dan tahun sehingga mudah ditebak. T!mun_Hijau48 panjang dan bercampur.'},
+      {kind:'rule', q:'What should you do with your password?', A:'Share it with your best friend.', B:'Keep it secret.', ans:'B', why:'A password is only for you. Do not share it, even with your best friend.', id:'Kata sandi hanya untukmu. Jangan dibagikan, bahkan kepada sahabat.'},
+      {kind:'pw', q:'Which password is stronger?', A:'Enggang*Terbang7', B:'password', ans:'A', why:'Everybody knows the word “password”. Enggang*Terbang7 is long and mixed.', id:'Semua orang tahu kata “password”. Enggang*Terbang7 panjang dan bercampur.'},
+      {kind:'rule', q:'Which rule is safer?', A:'Make it short, like abc.', B:'Make it long: 8 or more characters.', ans:'B', why:'Long passwords are harder to guess than short ones.', id:'Kata sandi yang panjang lebih sulit ditebak daripada yang pendek.'}
+    ]
+  },
+  gameKey(){ return `<ol>${this.game.rounds.map(r=>`<li>${r.q} A: ${r.A} · B: ${r.B} · <b>${r.ans}</b><br><span style="color:var(--muted)">${r.why}</span></li>`).join('')}</ol>
+    <p style="font-size:15px;color:var(--muted);margin-top:4px">The Educaplay Froggy Jumps is rebuilt inside the website as the folktale of Kancil and the crocodiles. Every password is fictional, and students never type a real password.</p>`; },
+  assess:[
+    {type:'mc', q:'Which sentence gives good advice about password safety?', qid:'Kalimat mana yang memberi saran baik tentang keamanan kata sandi?', opts:['You should share your password with your internet friends.','You should keep your password private and secure.','You should write your password on your school desk.'], a:1, fb:'Correct! Treat your password like your toothbrush—keep it private and never share it!'},
+    {type:'blank', before:'I', after:' give my password to strangers.', qid:'Pilih kata yang tepat.', opts:['should','shouldn’t'], a:1, fb:'Correct! I shouldn’t give my password to strangers.'}
+  ]
+};
+
+/* ---------- jump game (Kancil and the crocodiles) ---------- */
+function croc(i,L,x,y){
+  return `<g class="croc" id="c${i}${L}" data-i="${i}" data-l="${L}" transform="translate(${x} ${y}) scale(.72)" role="button" aria-label="Crocodile ${L}"><g class="bd">
+    <ellipse rx="50" ry="19" fill="none" stroke="#cfe9ff" stroke-width="2.5" opacity=".7"/>
+    <g stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round">
+      <path d="M-34 -6 Q-58 -4 -66 2 Q-58 5 -34 7Z" fill="#4f8a3c"/>
+      <ellipse rx="40" ry="14" fill="#4f8a3c"/>
+      <path d="M28 -9 Q58 -8 64 0 Q58 8 28 9Z" fill="#5c9c46"/>
+      ${[-24,-12,0,12].map(k=>`<path d="M${k} -12 l5 -7 l5 7Z" fill="#3e7230"/>`).join('')}
+      <circle cx="32" cy="-11" r="5.5" fill="#5c9c46"/>
+    </g>
+    <circle cx="33" cy="-12" r="2.4" fill="#fff"/><circle cx="33.6" cy="-12" r="1.2" fill="#000"/>
+    <g class="sign" transform="translate(0 -40)"><path d="M0 -4 V26" stroke="#6b3f1f" stroke-width="4"/>
+      <rect x="-22" y="-32" width="44" height="34" rx="8" fill="#fff" stroke="${INK}" stroke-width="3"/>
+      <text y="-6" text-anchor="middle" font-size="24" font-weight="800" fill="${INK}">${L}</text></g>
+  </g></g>`;
+}
+function jumpGame(stage, M, meta, run, api){
+  const G = M.game, R = G.rounds, n = R.length;
+  const X = i => 175 + i*95, Y = {A:112, B:262};
+  let idx = 0, firstTry = 0, tried = false, busy = false;
+  const cuc = (x,y,r) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse rx="15" ry="6" fill="#3f9a5d" stroke="${OUTLINE}" stroke-width="2"/><path d="M-8 -1 H8" stroke="#a8dbb5" stroke-width="2"/></g>`;
+  stage.innerHTML = `<div class="step-intro"><h2>${G.title}</h2><p>${G.intro[0]}</p>${idh(G.intro[1])}</div>
+    <div class="game-score"><div class="bar"><span id="gbar"></span></div><span id="gcount">Crossing 1 of ${n}</span></div>
+    <div class="panel river"><svg viewBox="0 0 800 360" role="img" aria-label="Kancil crossing a river on crocodiles">
+      <rect width="800" height="360" fill="#4f8fd1"/><rect width="800" height="360" fill="url(#waves)"/>
+      <path d="M0 0 H112 Q92 180 118 360 H0Z" fill="#7cc58f" stroke="${OUTLINE}" stroke-width="3"/>
+      <path d="M690 0 Q712 180 686 360 H800 V0Z" fill="#8fd09e" stroke="${OUTLINE}" stroke-width="3"/>
+      <g stroke="${OUTLINE}" stroke-width="2"><circle cx="40" cy="60" r="26" fill="#3f9a5d"/><circle cx="62" cy="300" r="22" fill="#3f9a5d"/></g>
+      <path d="M714 120 Q740 90 770 120 T790 170 M714 230 Q745 200 772 236" stroke="#2f6b45" stroke-width="4" fill="none"/>
+      ${cuc(728,112,-20)}${cuc(768,140,25)}${cuc(740,250,10)}${cuc(776,226,-30)}${cuc(724,300,15)}
+      <g transform="translate(730 30)"><path d="M20 30 V54" stroke="#6b3f1f" stroke-width="4"/><rect width="56" height="30" rx="6" fill="#fff7de" stroke="${INK}" stroke-width="2.5"/><text x="28" y="21" text-anchor="middle" font-size="15" font-weight="800" fill="${INK}">Timun</text></g>
+      ${R.map((r,i)=>croc(i,'A',X(i),Y.A)+croc(i,'B',X(i),Y.B)).join('')}
+      <g id="kt">${kancil(0,0,.5)}</g>
+    </svg></div>
+    <div class="jq" id="jq"></div>
+    ${api.nextBar('Next: Check')}`;
+  api.bindNext();
+  say('Help Kancil cross the river. Choose the crocodile with the strong and safe answer!','Bantu Kancil menyeberangi sungai. Pilih buaya dengan jawaban yang kuat dan aman!');
+  const kt = $('#kt', stage);
+  const place = (x,y) => { kt.style.transform = `translate(${x}px, ${y}px)`; };
+  place(30, 150);
+  $$('.croc', stage).forEach(c=>c.addEventListener('click', ()=>{ if(+c.dataset.i===idx && !busy) choose(c.dataset.l); }));
+  const meter = strong => `<span class="meter ${strong?'ok':'weak'}">${[0,1,2,3].map(i=>`<i class="${i<(strong?4:1)?'on':''}"></i>`).join('')}<span>${strong?'Strong':'Weak'}</span></span>`;
+  function round(){
+    const r = R[idx]; tried = false; busy = false;
+    ['A','B'].forEach(L=>$(`#c${idx}${L}`, stage).classList.add('show'));
+    $('#gcount').textContent = `Crossing ${idx+1} of ${n}`;
+    $('#jq').innerHTML = `<div class="q"><h4><span><span class="qnum">Crossing ${idx+1}</span><br>${r.q}</span><button class="spk" aria-label="Listen">${SPK}</button></h4>
+      <div class="jopts">${['A','B'].map(L=>`<button class="opt jopt" data-l="${L}"><span class="k">${L}</span><span class="${r.kind==='pw'?'pw':''}">${r[L]}</span></button>`).join('')}</div>
+      <div class="fb" hidden aria-live="polite"></div></div>`;
+    $('#jq .spk').onclick = () => Speech.say(`${r.q} A: ${r.kind==='pw'?r.A.split('').join(' '):r.A} B: ${r.kind==='pw'?r.B.split('').join(' '):r.B}`);
+    $$('#jq .jopt').forEach(b=>b.onclick=()=>choose(b.dataset.l));
+  }
+  function choose(L){
+    if(busy) return;
+    const r = R[idx]; const btn = $(`#jq .jopt[data-l="${L}"]`); const fb = $('#jq .fb'); fb.hidden = false;
+    if(btn.disabled) return;
+    if(L===r.ans){
+      busy = true; if(!tried) firstTry++; sfx.good();
+      btn.classList.add('right'); $$('#jq .jopt').forEach(b=>b.disabled=true);
+      const other = L==='A'?'B':'A';
+      $(`#c${idx}${other}`, stage).classList.add('sink');
+      const c = $(`#c${idx}${L}`, stage); c.classList.add('landed');
+      place(X(idx)-28, Y[L]-52);
+      if(r.kind==='pw') $$('#jq .jopt').forEach(b=>b.insertAdjacentHTML('beforeend', meter(b.dataset.l===r.ans)));
+      $('#gbar').style.width = ((idx+1)/n*100)+'%';
+      const last = idx===n-1;
+      fb.className = 'fb good'; fb.innerHTML = `${r.why}${idh(r.id,'span')}<div class="b-actions"><button class="btn" id="jnext">${last?'Jump to the cucumber garden →':'Next crossing →'}</button></div>`;
+      say(`Safe jump! ${r.why}`, r.id); Speech.say(`Safe jump! ${r.why}`);
+      $('#jnext').onclick = () => { idx++; if(idx<n) round(); else finish(); };
+    } else {
+      tried = true; sfx.bad(); btn.classList.add('wrong'); btn.disabled = true;
+      $(`#c${idx}${L}`, stage).classList.add('sink');
+      if(r.kind==='pw') btn.insertAdjacentHTML('beforeend', meter(false));
+      fb.className = 'fb try'; fb.innerHTML = `Splash! That crocodile swam away. ${r.why}${idh(r.id,'span')}`;
+      say('Splash! That answer is not safe. Look again and choose the other crocodile.','Byur! Jawaban itu tidak aman. Lihat lagi dan pilih buaya yang lain.'); Speech.say('Splash! That answer is not safe. Try the other one.');
+    }
+  }
+  function finish(){
+    place(712, 150);
+    run.game = firstTry/n; run.gameGot = firstTry; run.gameTotal = n; api.complete('game');
+    $('#gcount').textContent = `All ${n} crossings done`;
+    $('#jq').innerHTML = `<div class="result best" role="status"><h3>Kancil made it!</h3><p>Kancil crossed the river and reached the cucumber garden. ${firstTry} of ${n} crossings were right on the first try.</p>${idh('Kancil berhasil menyeberang dan sampai di kebun timun.')}</div>`;
+    sfx.star(); say('Hooray! Strong passwords keep us safe, just like strong crocodiles kept Kancil dry!','Hore! Kata sandi yang kuat menjaga kita tetap aman!');
+  }
+  round();
+}
+
+/* ===================== shell ===================== */
+const app = $('#app');
+let cleanups = [];
+function onLeave(fn){ cleanups.push(fn); }
+function leave(){ cleanups.forEach(f=>{try{f()}catch(e){}}); cleanups=[]; Speech.stop(); }
+
+function totalStars(){ return Object.values(state.progress).reduce((s,p)=>s+(p.stars||0),0); }
+function drawTop(){
+  $('#starTotal').innerHTML = `${STAR()}<span>${totalStars()}<span style="opacity:.6;font-size:15px"> / 18</span></span>`;
+  document.body.classList.toggle('help-on', !!state.help);
+  $('#helpBtn').setAttribute('aria-pressed', String(!!state.help));
+  $('#soundBtn').setAttribute('aria-pressed', String(!!state.sound));
+  $('#soundBtn .lbl').textContent = state.sound ? 'Sound on' : 'Sound off';
+}
+$('#helpBtn').onclick = () => { state.help=!state.help; save(); drawTop(); };
+$('#soundBtn').onclick = () => { state.sound=!state.sound; if(!state.sound) Speech.stop(); save(); drawTop(); };
+
+function toast(msg){
+  $$('.toast').forEach(t=>t.remove());
+  const t = h(`<div class="toast" role="status">${msg}</div>`); document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+function overlay(inner, onClose){
+  const o = h(`<div class="overlay" role="dialog" aria-modal="true"><div class="sheet">${inner}</div></div>`);
+  const close = () => { o.remove(); document.removeEventListener('keydown', esc); onClose&&onClose(); };
+  const esc = e => { if(e.key==='Escape') close(); };
+  o.addEventListener('click', e=>{ if(e.target===o || e.target.closest('[data-close]')) close(); });
+  document.addEventListener('keydown', esc);
+  document.body.appendChild(o);
+  const f = o.querySelector('button'); f&&f.focus();
+  return {el:o, close};
+}
+
+function status(m){
+  const p = state.progress[m.id];
+  if(p && p.done) return 'done';
+  if(!m.ready) return 'soon';
+  if(state.teacher) return 'open';
+  const prev = MODULES.find(x=>x.id===m.id-1);
+  if(!prev || (state.progress[prev.id]&&state.progress[prev.id].done)) return 'open';
+  return 'locked';
+}
+const STATUS_LABEL = {done:'Completed', open:'Ready to play', locked:'Finish the module before', soon:'Coming in the next update'};
+function goModule(id){
+  const m = MODULES.find(x=>x.id===id); const st = status(m);
+  if(st==='open' || st==='done'){ location.hash = 'module-'+id; }
+  else if(st==='soon') toast(`Module ${id} is coming in the next update.`);
+  else toast(`Finish Module ${id-1} first to unlock Module ${id}.`);
+}
+
+/* ===================== home ===================== */
+function mapSVG(){
+  const cur = MODULES.find(m=>status(m)==='open') || MODULES[0];
+  const pts = MODULES.map(m=>m.pin);
+  let route = `M${pts[0][0]} ${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i]; route += ` Q${(x0+x1)/2} ${Math.max(y0,y1)+60} ${x1} ${y1}`; }
+  const pins = MODULES.map(m=>{
+    const st = status(m); const [x,y] = m.pin;
+    const fill = st==='done' ? '#f6b21b' : st==='open' ? '#ffffff' : '#a9aed0';
+    const mark = st==='done' ? `<g transform="translate(14 -40) scale(.42)">${STAR().replace(/<\/?svg[^>]*>/g,'')}</g>` : (st==='locked'||st==='soon') ? `<g transform="translate(13 -34)"><rect x="0" y="6" width="16" height="13" rx="3" fill="${INK}"/><path d="M3 7 V3 a5 5 0 0 1 10 0 V7" stroke="${INK}" stroke-width="2.5" fill="none"/></g>` : '';
+    return `<g class="pin ${st}" data-id="${m.id}" tabindex="0" role="link" aria-label="Module ${m.id}: ${m.title}. ${STATUS_LABEL[st]}" transform="translate(${x} ${y})">
+      <circle r="31" cy="5" fill="rgba(0,0,0,.25)"/>
+      <circle class="ring" r="28" fill="${fill}" stroke="${INK}" stroke-width="4"/>
+      <text y="10" text-anchor="middle" class="pin-num">${m.id}</text>${mark}
+      <g transform="translate(0 50)"><rect x="-56" y="-15" width="112" height="25" rx="12.5" fill="${INK}" stroke="#fff" stroke-width="1.5"/><text y="3" text-anchor="middle" class="pin-label">${m.short}</text></g>
+    </g>`;
+  }).join('');
+  const [bx,by] = cur.pin;
+  return `<svg viewBox="0 0 1000 440" role="img" aria-label="Map of Nusantara with six module stops">
+    <rect width="1000" height="440" rx="24" fill="#2b4a9b"/>
+    <rect width="1000" height="440" rx="24" fill="url(#waves)"/>
+    <g fill="#80c896" stroke="#2f6b45" stroke-width="3" stroke-linejoin="round">
+      <path d="M40 50 C70 30 110 60 150 100 C200 150 250 200 300 250 C320 275 315 300 290 305 C250 300 210 270 170 230 C120 180 80 140 50 100 C35 80 30 60 40 50Z"/>
+      <path d="M300 330 C340 318 420 320 480 330 C520 336 545 345 540 358 C500 366 420 361 360 356 C320 352 295 345 300 330Z"/>
+      <path d="M555 350 C566 344 581 347 583 355 C579 363 563 363 555 358Z"/>
+      <path d="M370 120 C390 70 450 50 500 60 C540 70 560 100 555 140 C550 190 530 230 490 250 C450 265 400 250 380 215 C360 180 355 150 370 120Z"/>
+      <path d="M610 118 C640 104 690 104 702 114 C692 125 652 124 636 134 C631 158 641 174 665 179 C690 184 701 199 691 210 C671 205 651 199 641 205 C641 230 656 260 651 280 C641 286 631 270 626 250 C621 230 616 216 601 240 C591 260 581 270 575 262 C585 240 600 215 605 190 C610 160 600 140 610 118Z"/>
+      <path d="M820 170 C850 150 880 160 900 175 C930 190 960 200 975 230 C985 260 975 290 950 300 C910 305 880 290 860 270 C845 250 840 230 830 215 C810 210 790 200 795 185 C800 175 810 172 820 170Z"/>
+      <ellipse cx="326" cy="214" rx="13" ry="7"/><ellipse cx="604" cy="360" rx="13" ry="6"/><ellipse cx="640" cy="364" rx="16" ry="6"/><ellipse cx="682" cy="367" rx="19" ry="7"/>
+      <ellipse cx="742" cy="190" rx="9" ry="16"/><ellipse cx="772" cy="242" rx="15" ry="8"/><ellipse cx="738" cy="262" rx="10" ry="6"/>
+    </g>
+    <path d="${route}" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="2 12" stroke-linecap="round" opacity=".85"/>
+    <g transform="translate(840 34)"><rect x="-20" y="0" width="160" height="58" rx="12" fill="${INK}" stroke="#f6b21b" stroke-width="2"/><text x="60" y="27" text-anchor="middle" font-size="22" font-weight="800" fill="#f6b21b" letter-spacing="2">NUSANTARA</text><text x="60" y="46" text-anchor="middle" font-size="13" fill="#d4d9fa" font-family="Andika, sans-serif">Digital Safety Route</text></g>
+    <g transform="translate(70 375)"><circle r="30" fill="${INK}" opacity=".5"/><path d="M0 -26 L7 0 L0 26 L-7 0Z" fill="#fff"/><path d="M0 -26 L7 0 L-7 0Z" fill="#d9434f"/><text y="-34" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">N</text></g>
+    ${pins}
+    <g transform="translate(${bx+52} ${by+12})"><g class="bob">
+      <path d="M-30 0 Q0 14 34 0 L28 11 Q0 19 -24 11Z" fill="#8a5428" stroke="${OUTLINE}" stroke-width="2"/>
+      <path d="M-6 0 V-40 M12 0 V-33" stroke="${OUTLINE}" stroke-width="2.5"/>
+      <path d="M-6 -38 L-27 -4 L-6 -4Z" fill="#fff" stroke="${OUTLINE}" stroke-width="1.5"/><path d="M12 -31 L31 -4 L12 -4Z" fill="#fff" stroke="${OUTLINE}" stroke-width="1.5"/><path d="M-4 -36 L10 -6 L-4 -6Z" fill="#f6b21b" stroke="${OUTLINE}" stroke-width="1.5"/>
+      <path d="M-6 -40 L4 -44 L-6 -47Z" fill="#d9434f"/>
+    </g></g>
+  </svg>`;
+}
+function renderHome(){
+  leave();
+  const cards = MODULES.map(m=>{
+    const st = status(m); const p = state.progress[m.id];
+    const chips = st==='done' ? `<span class="chip done">${STAR()} ${p.stars} / 3 stars</span><span class="chip">${m.badge} badge</span>`
+      : st==='open' ? `<span class="chip">Ready to play</span><span class="chip">15 minutes</span>`
+      : st==='soon' ? `<span class="chip soon">Coming in the next update</span>` : `<span class="chip soon">Finish Module ${m.id-1} to unlock</span>`;
+    return `<button class="mod-card ${st}" data-id="${m.id}"><span class="mod-num">${m.id}</span><span><h3>${m.title}</h3><span class="mod-meta">${m.theme} · ${m.region}</span><span class="chips">${chips}</span></span></button>`;
+  }).join('');
+  const member = (svg, vb, name, place, wear) => `<div class="member"><svg viewBox="${vb}" aria-hidden="true">${svg}</svg><h3>${name}</h3><p>${place}</p><p>${wear}</p></div>`;
+  app.innerHTML = `
+  <section class="hero"><div class="hero-inner">
+    <p class="eyebrow">English · Grades 4–6 · Modules 7–12</p>
+    <h1>Digital Safety <em>Adventure</em></h1>
+    <p class="lead">Sail across Nusantara with Sri, Ahmad, Dina and Kancil. Finish the mission on each island, collect stars, and become a Smart Digital Citizen.</p>
+    <p class="lead idh">Berlayarlah keliling Nusantara bersama Sri, Ahmad, Dina, dan Kancil. Selesaikan misi di setiap pulau, kumpulkan bintang, dan jadilah Warga Digital yang Cerdas.</p>
+    <div class="map-wrap">${mapSVG()}</div>
+  </div></section>
+  <div class="wrap">
+    <div class="sec-head"><h2>Your journey</h2><p>One module each week · 15 minutes each</p></div>
+    <div class="mod-grid">${cards}</div>
+    <div class="sec-head" style="margin-top:44px"><h2>Meet the team</h2><p>Friends from across Indonesia</p></div>
+    <div class="team">
+      ${member(person({...CAST.sri,x:10,y:6}),'0 0 140 240','Sri','Yogyakarta, Java','Kebaya and batik parang')}
+      ${member(person({...CAST.ahmad,x:10,y:6}),'0 0 140 240','Ahmad','Riau, Sumatra','Teluk belanga, peci and songket')}
+      ${member(person({...CAST.dina,x:10,y:6}),'0 0 140 240','Dina','Bali','Kebaya Bali, selendang and frangipani')}
+      ${member(kancil(4,60,1),'0 0 130 175','Kancil','Your guide','A clever mouse deer in a blangkon')}
+    </div>
+    <div class="foot">
+      <span>Story-based microlearning · Profil Pelajar Pancasila &amp; Wasatiyah values</span>
+      <span style="display:flex;gap:18px;flex-wrap:wrap"><button class="link-btn" id="teachBtn" aria-pressed="${!!state.teacher}">${state.teacher?'Teacher mode is on: close locked modules':'Teacher mode: open all ready modules'}</button><button class="link-btn" id="resetBtn">Reset progress on this device</button></span>
+    </div>
+  </div>`;
+  $$('.pin').forEach(p=>{
+    p.addEventListener('click', ()=>goModule(+p.dataset.id));
+    p.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); goModule(+p.dataset.id);} });
+  });
+  $$('.mod-card').forEach(c=>c.onclick=()=>goModule(+c.dataset.id));
+  $('#teachBtn').onclick = () => { state.teacher = !state.teacher; save(); renderHome(); toast(state.teacher ? 'Teacher mode on: every ready module is open.' : 'Teacher mode off.'); };
+  $('#resetBtn').onclick = () => {
+    const ov = overlay(`<h2>Reset progress?</h2><p style="margin-top:8px">All stars and badges on this device will be removed. This cannot be undone.</p>${idh('Semua bintang dan lencana di perangkat ini akan dihapus.')}<div class="next-bar"><button class="btn sec" data-close>Cancel</button><button class="btn" id="doReset">Reset</button></div>`);
+    $('#doReset', ov.el).onclick = () => { state.progress = {}; save(); ov.close(); drawTop(); renderHome(); toast('Progress has been reset.'); };
+  };
+}
+
+/* ===================== reusable activities ===================== */
+const LETTERS = 'ABCD';
+function mcq(container, {q, qid, opts, a, fb, num, row=false, onDone}){
+  const el = h(`<div class="q"><h4><span>${num?`<span class="qnum">${num}</span><br>`:''}${q}</span><button class="spk" aria-label="Listen to the question">${SPK}</button></h4>${qid?idh(qid):''}
+    <div class="opts ${row?'row':''}">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${LETTERS[i]}</span><span>${o}</span></button>`).join('')}</div><div class="fb" hidden aria-live="polite"></div></div>`);
+  let first = true, solved = false;
+  $('.spk', el).onclick = () => Speech.say(strip(q).replace(/_+/g,'blank') + '. ' + opts.map((o,i)=>LETTERS[i]+'. '+o).join('. '));
+  $$('.opt', el).forEach(b=>b.onclick=()=>{
+    if(solved) return;
+    const i = +b.dataset.i; const f = $('.fb', el); f.hidden = false;
+    if(i===a){
+      solved = true; b.classList.add('right'); sfx.good();
+      f.className='fb good'; f.innerHTML = fb || 'Correct!';
+      Speech.say(fb || 'Correct!');
+      $$('.opt', el).forEach(x=>x.disabled=true);
+      onDone && onDone(first);
+    } else {
+      first = false; b.classList.add('wrong'); b.disabled = true; sfx.bad();
+      f.className='fb try'; f.innerHTML = 'Not yet. Read the question again and try another answer.' + idh('Belum tepat. Baca lagi pertanyaannya dan coba jawaban lain.','span');
+    }
+  });
+  container.appendChild(el); return el;
+}
+function blankQ(container, {before, after, qid, opts, a, fb, num, onDone}){
+  const el = h(`<div class="q"><h4><span>${num?`<span class="qnum">${num}</span><br>`:''}${before} <span class="blank">?</span>${after}</span><button class="spk" aria-label="Listen">${SPK}</button></h4>${qid?idh(qid):''}
+    <div class="opts row">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${LETTERS[i]}</span><span>${o}</span></button>`).join('')}</div><div class="fb" hidden aria-live="polite"></div></div>`);
+  let first = true, solved = false;
+  $('.spk', el).onclick = () => Speech.say(`${before} blank ${after}. ${opts.join(' or ')}?`);
+  $$('.opt', el).forEach(b=>b.onclick=()=>{
+    if(solved) return;
+    const i = +b.dataset.i; const f = $('.fb', el); f.hidden = false;
+    if(i===a){
+      solved = true; b.classList.add('right'); sfx.good();
+      const bl = $('.blank', el); bl.textContent = opts[a]; bl.classList.add('filled');
+      f.className='fb good'; f.innerHTML = fb; Speech.say(fb);
+      $$('.opt', el).forEach(x=>x.disabled=true); onDone && onDone(first);
+    } else {
+      first = false; b.classList.add('wrong'); b.disabled = true; sfx.bad();
+      f.className='fb try'; f.innerHTML = 'Not yet. Try the other word.' + idh('Belum tepat. Coba kata yang lain.','span');
+    }
+  });
+  container.appendChild(el); return el;
+}
+function sentenceBuilder(container, sentences, onDone){
+  let idx = 0;
+  const el = h(`<div class="builder"><div class="b-head"><strong style="font-family:var(--display);font-size:20px">Tap the words in order</strong><span class="count"></span></div>${idh('Ketuk kata-kata secara berurutan untuk menyusun kalimat. Ketuk kata di kotak atas untuk mengembalikannya.')}
+    <div class="slot-row" aria-label="Your sentence"></div><div class="tile-row"></div>
+    <div class="b-actions"><button class="btn sec sm" data-act="reset">Start again</button><button class="btn sec sm" data-act="listen">${SPK} Listen</button></div><div class="fb" hidden aria-live="polite"></div></div>`);
+  const slot = $('.slot-row', el), tiles = $('.tile-row', el), fbx = $('.fb', el);
+  let words = [];
+  function load(){
+    const s = sentences[idx]; words = s.split(' ');
+    let order = shuffle(words.map((w,i)=>i)); if(order.every((v,i)=>v===i)) order = order.reverse();
+    slot.innerHTML=''; slot.className='slot-row'; fbx.hidden = true;
+    tiles.innerHTML = order.map(i=>`<button class="tile" data-w="${words[i]}">${words[i]}</button>`).join('');
+    $('.count', el).textContent = `Sentence ${idx+1} of ${sentences.length}`;
+    $$('.tile', tiles).forEach(t=>t.onclick=()=>move(t));
+  }
+  function move(t){
+    if(slot.classList.contains('ok')) return;
+    sfx.tap(); slot.classList.remove('bad');
+    (t.parentElement===tiles ? slot : tiles).appendChild(t);
+    if(slot.children.length===words.length) check();
+    else fbx.hidden = true;
+  }
+  function check(){
+    const built = [...slot.children].map(t=>t.dataset.w).join(' ');
+    if(built===sentences[idx]){
+      slot.classList.add('ok'); sfx.good(); Speech.say(built);
+      fbx.hidden=false; fbx.className='fb good'; fbx.textContent = idx < sentences.length-1 ? 'Great sentence! Here comes the next one.' : 'Great sentence! You built all three.';
+      setTimeout(()=>{ idx++; if(idx<sentences.length) load(); else { tiles.innerHTML=''; $('.count', el).textContent='All done'; onDone&&onDone(); } }, 1600);
+    } else {
+      void slot.offsetWidth; slot.classList.add('bad'); sfx.bad();
+      fbx.hidden=false; fbx.className='fb try'; fbx.innerHTML = 'Almost! Tap a word in the box to move it back, then try again.' + idh('Hampir! Ketuk kata di kotak untuk mengembalikannya, lalu coba lagi.','span');
+    }
+  }
+  el.querySelector('[data-act="reset"]').onclick = load;
+  el.querySelector('[data-act="listen"]').onclick = () => Speech.say(sentences[Math.min(idx, sentences.length-1)]);
+  container.appendChild(el); load(); return el;
+}
+
+/* ===================== module page ===================== */
+const STEPS = [
+  {key:'story', label:'Story Time', min:'4 min'},
+  {key:'words', label:'Words & Grammar', min:'3 min'},
+  {key:'game', label:'Game', min:'5 min'},
+  {key:'check', label:'Check', min:'3 min'},
+  {key:'badge', label:'Badge', min:'Reward'}
+];
+function renderModule(id){
+  leave();
+  const M = CONTENT[id], meta = MODULES.find(m=>m.id===id);
+  const run = { step:0, done:{}, story:null, game:null, check:null };
+  app.innerHTML = `
+  <section class="mod-head"><div class="mod-head-inner">
+    <a class="crumb" href="#home">← Back to the map</a>
+    <div class="title-row">
+      <div><p class="eyebrow">Module ${id} · ${meta.theme} · ${meta.region}</p><h1>${meta.title}</h1></div>
+      <div class="head-tools">
+        <div class="timer" id="timer"><span class="t-lbl">Class timer</span><span class="t">15:00</span><button id="tBtn">Pause</button></div>
+        <button class="pill-btn" id="notesBtn">Teacher notes</button>
+      </div>
+    </div>
+    <div class="steps" role="tablist" aria-label="Module steps">${STEPS.map((s,i)=>`<button class="step-tab" role="tab" data-i="${i}" aria-selected="${i===0}"><span>${i<4?(i+1)+'. ':''}${s.label}<span class="tick" aria-label="done">✓</span></span><span class="min">${s.min}</span></button>`).join('')}</div>
+  </div></section>
+  <main class="stage" id="stage"></main>
+  <div class="guide" id="guide"><div class="guide-inner">${KANCIL_SVG}<div class="bubble" id="bubble" aria-live="polite"></div></div></div>`;
+
+  // timer
+  let remaining = 15*60, running = true;
+  const tEl = $('#timer');
+  const draw = () => { $('.t',tEl).textContent = `${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,'0')}`; tEl.classList.toggle('late', remaining<=60); };
+  const iv = setInterval(()=>{ if(running && remaining>0){ remaining--; draw(); if(remaining===0) say('Time is up! Great work today.','Waktu habis! Kerja bagus hari ini.'); } }, 1000);
+  onLeave(()=>clearInterval(iv));
+  $('#tBtn').onclick = () => { running=!running; $('#tBtn').textContent = running?'Pause':'Resume'; };
+  $('#notesBtn').onclick = () => teacherNotes(id);
+
+  const stage = $('#stage');
+  function go(i){
+    run.step = i; Speech.stop();
+    $$('.step-tab').forEach((t,j)=>t.setAttribute('aria-selected', String(j===i)));
+    stage.innerHTML = '';
+    const key = STEPS[i].key;
+    ({story:stepStory, words:stepWords, game:stepGame, check:stepCheck, badge:stepBadge})[key](stage, M, meta, run, api);
+    window.scrollTo({top:0});
+  }
+  function complete(key){
+    run.done[key] = true;
+    const i = STEPS.findIndex(s=>s.key===key);
+    $$('.step-tab')[i].classList.add('done');
+    const nb = $('#nextBtn'); if(nb){ nb.disabled = false; const hint = $('.next-bar .hint'); hint && hint.remove(); }
+  }
+  function nextBar(label){
+    return `<div class="next-bar"><span class="hint">Finish this part to continue, or use the tabs above.</span><button class="btn" id="nextBtn" disabled>${label} →</button></div>`;
+  }
+  function bindNext(){ const nb = $('#nextBtn'); if(nb) nb.onclick = () => go(run.step+1); }
+  const api = {go, complete, nextBar, bindNext};
+  $$('.step-tab').forEach(t=>t.onclick=()=>go(+t.dataset.i));
+  go(0);
+}
+function say(en, id){
+  const b = $('#bubble'); if(!b) return;
+  b.innerHTML = `<span>${en}${id?idh(id,'span'):''}</span><button class="spk" aria-label="Listen to Kancil">${SPK}</button>`;
+  b.classList.remove('new'); void b.offsetWidth; b.classList.add('new');
+  $('.spk', b).onclick = () => Speech.say(en);
+}
+
+/* ---------- step 1: story ---------- */
+function stepStory(stage, M, meta, run, api){
+  let p = 0;
+  const firstTry = [];
+  stage.innerHTML = `
+    <div class="step-intro"><h2>Story Time: ${M.storyTitle}</h2><p>Read or listen to the story. Tap a highlighted word to learn it.</p>${idh('Baca atau dengarkan ceritanya. Ketuk kata yang ditandai untuk mempelajarinya.')}</div>
+    <div class="story">
+      <div class="panel" id="panel"></div>
+      <div>
+        <span class="panel-count" id="pc"></span>
+        <p class="story-text" id="st"></p>
+        <p class="idh" id="stid"></p>
+        <div class="story-nav">
+          <button class="btn sec" id="listen">${SPK} Read aloud</button>
+          <button class="btn sec" id="prev">← Back</button>
+          <button class="btn" id="fwd">Next →</button>
+        </div>
+        <div class="dots" id="dots">${M.story.map(()=>'<i></i>').join('')}</div>
+        <div class="word-spot" id="spot">Tap a highlighted word in the story.</div>
+      </div>
+    </div>
+    <div id="cq" hidden>
+      <h3 class="sub-h">Story questions</h3>${idh('Jawab pertanyaan tentang cerita.')}
+      <div id="cqList"></div>
+    </div>
+    ${api.nextBar('Next: Words & Grammar')}`;
+  api.bindNext();
+  say(M.guideIntro[0], M.guideIntro[1]);
+  const fmt = t => t.replace(/\[([^\]]+)\]/g, (m,w)=>`<button class="vw" data-w="${w.toLowerCase()}">${w}</button>`);
+  function show(){
+    const s = M.story[p];
+    $('#panel').innerHTML = sceneSVG(s.scene, s.alt);
+    $('#pc').textContent = `Page ${p+1} of ${M.story.length}`;
+    $('#st').innerHTML = fmt(s.text);
+    $('#stid').textContent = s.id;
+    $('#prev').disabled = p===0;
+    $('#fwd').textContent = p===M.story.length-1 ? 'Story questions ↓' : 'Next →';
+    $$('#dots i').forEach((d,i)=>d.classList.toggle('on', i<=p));
+    $$('.vw', stage).forEach(b=>b.onclick=()=>spot(b.dataset.w));
+  }
+  function spot(w){
+    const key = M.wordMap[w]; const v = key && M.vocab.find(x=>x.w===key);
+    const el = $('#spot');
+    if(v){ el.innerHTML = `${icon(v.icon,52)}<span><b>${w}</b>${v.w.toLowerCase()!==w?`Word card: ${v.w} · `:''}${v.ex}${idh(v.id,'span')}</span>`; }
+    else { const x = (M.extra||{})[w] || ['','']; el.innerHTML = `<span><b>${w}</b>${x[0]}${idh(x[1],'span')}</span>`; }
+    Speech.say(w);
+  }
+  $('#listen').onclick = () => Speech.say(strip(M.story[p].text.replace(/[\[\]]/g,'')));
+  $('#prev').onclick = () => { if(p>0){ p--; show(); } };
+  $('#fwd').onclick = () => {
+    if(p < M.story.length-1){ p++; show(); return; }
+    const cq = $('#cq');
+    if(cq.hidden){
+      cq.hidden = false;
+      M.comprehension.forEach((c,i)=>mcq($('#cqList'), {...c, num:`Question ${i+1}`, onDone:(f)=>{ firstTry[i]=f; if(firstTry.filter(x=>x!==undefined).length===M.comprehension.length){ run.story = firstTry.filter(Boolean).length; api.complete('story'); say('You understood the story! Press Next to learn new words.','Kamu memahami ceritanya! Tekan Next untuk belajar kata baru.'); } }}));
+      say('Now answer three questions about the story.','Sekarang jawab tiga pertanyaan tentang cerita.');
+    }
+    cq.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+  show();
+}
+
+/* ---------- step 2: words ---------- */
+function stepWords(stage, M, meta, run, api){
+  const seen = new Set(); let builtDone = false; let possDone = 0;
+  stage.innerHTML = `
+    <div class="step-intro"><h2>Words &amp; Grammar</h2><p>Focus: ${M.focus}</p></div>
+    <h3 class="sub-h" style="margin-top:0">1. Word cards</h3><p>Tap each card to hear the word.</p>${idh('Ketuk setiap kartu untuk mendengar katanya.')}
+    <div class="vocab-grid" style="margin-top:12px">${M.vocab.map((v,i)=>`<button class="vcard" data-i="${i}">${icon(v.icon,76)}<span class="w">${v.w}</span>${idh(v.id,'span')}<span class="ex">${v.ex}</span></button>`).join('')}</div>
+    <h3 class="sub-h">2. Sentence patterns</h3>
+    <div class="pattern-box">${M.patterns.map(p=>`<p>${p}</p>`).join('')}</div>
+    <h3 class="sub-h">3. Build the sentence</h3><div id="builder"></div>
+    <h3 class="sub-h">4. ${M.drill.title}</h3>${idh(M.drill.idh)}<div id="poss"></div>
+    ${api.nextBar('Next: Game')}`;
+  api.bindNext();
+  say(M.vocabIntro[0], M.vocabIntro[1]);
+  const check = () => { if(seen.size===M.vocab.length && builtDone && possDone===M.drill.items.length){ api.complete('words'); say('Super! You know the words. Now let’s play the game.','Hebat! Kamu sudah tahu kata-katanya. Ayo main game.'); } };
+  $$('.vcard', stage).forEach(c=>c.onclick=()=>{ const v = M.vocab[+c.dataset.i]; Speech.say(`${v.w}. ${v.ex}`); c.classList.add('seen'); seen.add(v.w); check(); });
+  sentenceBuilder($('#builder'), M.sentences, ()=>{ builtDone=true; check(); });
+  M.drill.items.forEach((q,i)=>mcq($('#poss'), {q:q.q, qid:q.qid, opts:M.drill.opts, a:q.a, row:true, num:`Item ${i+1}`,
+    fb:q.fb, onDone:()=>{ possDone++; check(); }}));
+}
+
+/* ---------- step 3: game ---------- */
+function stepGame(stage, M, meta, run, api){ return ({quest:questGame, jump:jumpGame, sort:sortGame}[M.gameType])(stage, M, meta, run, api); }
+function sortGame(stage, M, meta, run, api){
+  const G = M.game; const cards = shuffle(G.cards.map(c=>({...c, wrong:false})));
+  let sorted = 0, firstTry = 0, sel = null, drag = null, justDragged = false;
+  stage.innerHTML = `
+    <div class="step-intro"><h2>${G.title}</h2><p>Drag each card into the <b>Private Vault</b> or <b>Safe Share</b>. You can also tap a card, then tap a box.</p>${idh('Seret setiap kartu ke Private Vault (brankas rahasia) atau Safe Share (boleh dibagikan). Bisa juga ketuk kartu, lalu ketuk kotaknya.')}</div>
+    <div class="game-score"><div class="bar"><span id="gbar"></span></div><span id="gcount">0 / ${cards.length} sorted</span></div>
+    <div class="zones">
+      <div class="zone vault" data-zone="vault" tabindex="0" role="button" aria-label="Private Vault">${icon('vault',78,'zi')}<h3>Private Vault</h3><span class="zs">Keep it secret</span>${idh('Simpan rahasia','span')}<div class="stack"></div></div>
+      <div class="zone share" data-zone="share" tabindex="0" role="button" aria-label="Safe Share">${icon('share',78,'zi')}<h3>Safe Share</h3><span class="zs">OK to share</span>${idh('Boleh dibagikan','span')}<div class="stack"></div></div>
+    </div>
+    <div class="tray" id="tray">${cards.map((c,i)=>`<button class="gcard" data-i="${i}">${icon(c.icon,58)}<span>${c.t}</span></button>`).join('')}</div>
+    ${api.nextBar('Next: Check')}`;
+  api.bindNext();
+  say('Help Sri sort the cards. Is it private, or is it safe to share?','Bantu Sri memilah kartu. Rahasia, atau boleh dibagikan?');
+  const tray = $('#tray'), zones = $$('.zone', stage);
+  const select = c => { $$('.gcard', tray).forEach(x=>x.classList.toggle('sel', x===c)); sel = c; };
+  const zoneAt = (x,y) => zones.find(z=>{ const r=z.getBoundingClientRect(); return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom; });
+  const hot = z => zones.forEach(q=>q.classList.toggle('hot', q===z));
+  function drop(cardEl, zone){
+    const c = cards[+cardEl.dataset.i];
+    hot(null);
+    if(c.zone===zone.dataset.zone){
+      sfx.good(); cardEl.remove(); sel = null; sorted++; if(!c.wrong) firstTry++;
+      $('.stack', zone).insertAdjacentHTML('beforeend', `<span class="chipcard">${icon(c.icon,24)}${c.t}</span>`);
+      zone.classList.remove('flash'); void zone.offsetWidth; zone.classList.add('flash');
+      $('#gbar').style.width = (sorted/cards.length*100)+'%';
+      $('#gcount').textContent = `${sorted} / ${cards.length} sorted`;
+      say(c.why, c.id); Speech.say(c.why);
+      if(sorted===cards.length){
+        run.game = firstTry/cards.length; run.gameGot = firstTry; run.gameTotal = cards.length; api.complete('game');
+        tray.innerHTML = `<span class="tray-empty">All cards sorted! First-try score: ${firstTry} / ${cards.length}</span>`;
+        setTimeout(()=>{ if(!document.body.contains(tray)) return; say(`Amazing! You sorted all the cards. ${firstTry} were right on the first try.`, `Luar biasa! Semua kartu sudah dipilah. ${firstTry} benar pada percobaan pertama.`); sfx.star(); }, 900);
+      }
+    } else {
+      c.wrong = true; sfx.bad();
+      cardEl.classList.remove('shake'); void cardEl.offsetWidth; cardEl.classList.add('shake');
+      const hnt = G.hint[c.zone]; say(hnt[0], hnt[1]); Speech.say(hnt[0]);
+    }
+  }
+  tray.addEventListener('pointerdown', e=>{
+    const c = e.target.closest('.gcard'); if(!c || e.button>0) return;
+    drag = {c, x:e.clientX, y:e.clientY, moved:false};
+    try{ c.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  tray.addEventListener('pointermove', e=>{
+    if(!drag) return;
+    const dx = e.clientX-drag.x, dy = e.clientY-drag.y;
+    if(!drag.moved && Math.hypot(dx,dy)>8){ drag.moved = true; drag.c.classList.add('dragging'); select(drag.c); }
+    if(drag.moved){ drag.c.style.transform = `translate(${dx}px,${dy}px) rotate(-3deg)`; hot(zoneAt(e.clientX,e.clientY)); e.preventDefault(); }
+  });
+  const end = e => {
+    if(!drag) return; const d = drag; drag = null;
+    if(d.moved){
+      justDragged = true; setTimeout(()=>justDragged=false, 60);
+      d.c.classList.remove('dragging'); d.c.style.transform = '';
+      const z = e.type==='pointerup' ? zoneAt(e.clientX,e.clientY) : null;
+      if(z) drop(d.c, z); else hot(null);
+    }
+  };
+  tray.addEventListener('pointerup', end);
+  tray.addEventListener('pointercancel', end);
+  tray.addEventListener('click', e=>{
+    const c = e.target.closest('.gcard'); if(!c || justDragged) return;
+    if(sel===c){ select(null); return; }
+    select(c); sfx.tap(); Speech.say(cards[+c.dataset.i].t);
+  });
+  zones.forEach(z=>{
+    const act = () => { if(sel) drop(sel, z); else say('First tap a card, then tap this box.','Ketuk kartu dulu, lalu ketuk kotak ini.'); };
+    z.addEventListener('click', act);
+    z.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); act(); } });
+  });
+}
+
+/* ---------- step 4: check ---------- */
+function stepCheck(stage, M, meta, run, api){
+  const res = [];
+  stage.innerHTML = `<div class="step-intro"><h2>Check Your Understanding</h2><p>Answer two questions to earn your badge.</p>${idh('Jawab dua pertanyaan untuk mendapatkan lencanamu.')}</div><div id="qa"></div>${api.nextBar('See my badge')}`;
+  api.bindNext();
+  say('Last part! Answer two questions.','Bagian terakhir! Jawab dua pertanyaan.');
+  const done = (i,f) => { res[i]=f; if(res.filter(x=>x!==undefined).length===M.assess.length){ run.check = res.filter(Boolean).length; api.complete('check'); say('Well done! Press “See my badge”.','Bagus sekali! Tekan “See my badge”.'); } };
+  M.assess.forEach((q,i)=>{
+    const num = i===0 ? 'Question 1 · Multiple choice' : 'Question 2 · Fill in the blank';
+    if(q.type==='mc') mcq($('#qa'), {...q, num, onDone:f=>done(i,f)});
+    else blankQ($('#qa'), {...q, num, onDone:f=>done(i,f)});
+  });
+}
+
+/* ---------- step 5: badge ---------- */
+function badgeSVG(name, id, ic='shield'){
+  const ring = Array.from({length:12},(_,i)=>{ const a=i*30*Math.PI/180; return `<g transform="translate(${150+Math.cos(a)*118} ${150+Math.sin(a)*118}) rotate(${i*30+45})"><ellipse rx="5" ry="9" fill="#f6b21b"/><ellipse rx="9" ry="5" fill="#f6b21b" opacity=".6"/></g>`; }).join('');
+  return `<svg viewBox="0 0 300 300" role="img" aria-label="${name} badge"><g class="stamp" style="transform-origin:150px 150px">
+    <circle cx="150" cy="150" r="140" fill="${INK}"/><circle cx="150" cy="150" r="132" fill="none" stroke="#f6b21b" stroke-width="3" stroke-dasharray="3 7"/>
+    ${ring}
+    <circle cx="150" cy="150" r="98" fill="#2a3990" stroke="#f6b21b" stroke-width="4"/>
+    <g transform="translate(110 70) scale(1.25)"><g stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" fill="none">${ICONS[ic]}</g></g>
+    <text x="150" y="182" text-anchor="middle" font-size="27" font-weight="800" fill="#fff">${name}</text>
+    <text x="150" y="208" text-anchor="middle" font-size="15" font-weight="700" fill="#f6b21b" letter-spacing="2">MODULE ${id}</text>
+  </g></svg>`;
+}
+function stepBadge(stage, M, meta, run, api){
+  const parts = [['story','Story Time',0],['game','Game',2],['check','Check',3]].filter(([k])=>!run.done[k]);
+  if(parts.length){
+    stage.innerHTML = `<div class="step-intro"><h2>Almost there!</h2><p>Finish these parts to earn your badge.</p>${idh('Selesaikan bagian berikut untuk mendapatkan lencanamu.')}</div>
+      <div class="next-bar" style="justify-content:flex-start">${parts.map(([k,l,i])=>`<button class="btn sec" data-go="${i}">Go to ${l}</button>`).join('')}</div>`;
+    $$('[data-go]', stage).forEach(b=>b.onclick=()=>api.go(+b.dataset.go));
+    say('Finish the other parts first, then come back for your badge.','Selesaikan bagian lain dulu, lalu kembali untuk mengambil lencanamu.');
+    return;
+  }
+  const items = [
+    {ok: run.story!==null && run.story>=2, label:'Story questions', got: run.story===null?'Not answered yet':`${run.story} / 3 right on the first try`},
+    {ok: run.game!==null && run.game>=0.75, label:M.game.title, got: run.game===null?'Not played yet':`${run.gameGot} / ${run.gameTotal} ${M.game.unit}`},
+    {ok: run.check!==null && run.check===2, label:'Check questions', got: run.check===null?'Not answered yet':`${run.check} / 2 right on the first try`}
+  ];
+  const stars = items.filter(i=>i.ok).length;
+  const prev = state.progress[meta.id] || {};
+  state.progress[meta.id] = {done:true, stars:Math.max(prev.stars||0, stars)}; save(); drawTop();
+  const next = MODULES.find(m=>m.id===meta.id+1);
+  stage.innerHTML = `
+    <div class="reward">
+      <div class="badge-wrap">${badgeSVG(meta.badge, meta.id, meta.badgeIcon)}</div>
+      <div>
+        <p class="eyebrow" style="color:var(--muted)">Module ${meta.id} complete</p>
+        <h2 style="font-size:40px;font-weight:800">You are a ${meta.badge}!</h2>
+        <p style="margin-top:6px">${M.badgeLine[0]}</p>${idh(M.badgeLine[1])}
+        <div class="stars-row" aria-label="${stars} of 3 stars">${[0,1,2].map(i=>STAR(i<stars?'#f6b21b':'#e1e3ef')).join('')}</div>
+        <ul class="star-list">${items.map(i=>`<li>${STAR(i.ok?'#f6b21b':'#e1e3ef')}<span><b>${i.label}</b> · ${i.got}</span></li>`).join('')}</ul>
+        <div class="next-bar" style="justify-content:flex-start">
+          <a class="btn" href="#home">Back to the map</a>
+          <button class="btn sec" id="again">Play again</button>
+        </div>
+        ${next && !next.ready ? `<p class="hint" style="margin-top:12px;color:var(--muted)">Module ${next.id}, “${next.title}”, comes in the next update.</p>` : ''}
+      </div>
+    </div>`;
+  $$('.step-tab')[4].classList.add('done');
+  $('#again').onclick = () => renderModule(meta.id);
+  sfx.star();
+  say(`Congratulations! You earned ${stars} ${stars===1?'star':'stars'} and the ${meta.badge} badge.`, `Selamat! Kamu mendapat ${stars} bintang dan lencana ${meta.badge}.`);
+  setTimeout(()=>Speech.say(`Congratulations! You are a ${meta.badge}!`), 500);
+}
+
+/* ---------- teacher notes ---------- */
+function teacherNotes(id){
+  const M = CONTENT[id], meta = MODULES.find(m=>m.id===id);
+  const akey = M.assess.map(q => q.type==='mc'
+    ? `<li>${q.q} <b>${LETTERS[q.a]}. ${q.opts[q.a]}</b></li>`
+    : `<li>“${q.before?q.before+' ':''}____${q.after}” (${q.opts.join(' / ')}) <b>${q.opts[q.a]}</b></li>`).join('');
+  overlay(`
+    <div class="close-row"><h2>Teacher notes · Module ${id}</h2><button class="btn sec sm" data-close>Close</button></div>
+    <p style="color:var(--muted)">${meta.theme}: ${meta.title}</p>
+    <dl class="kv">
+      <dt>Time allocation</dt><dd>15 minutes: Story 4 · Vocabulary 3 · Game 5 · Assessment 3</dd>
+      <dt>Target value</dt><dd>${M.value}</dd>
+      <dt>Language focus</dt><dd>${M.focus}</dd>
+      <dt>Setting</dt><dd>${M.setting}</dd>
+    </dl>
+    <h3>Learning objectives</h3><ul>${M.objectives.map(o=>`<li>${o}</li>`).join('')}</ul>
+    <h3>Answer key: story questions</h3><ol>${M.comprehension.map(c=>`<li>${c.q} <b>${c.opts[c.a]}</b></li>`).join('')}</ol>
+    <h3>Answer key: ${M.drill.title}</h3><ol>${M.drill.items.map(d=>`<li>${d.q.replace('____','<b>'+M.drill.opts[d.a]+'</b>')}</li>`).join('')}</ol>
+    <h3>Answer key: ${M.game.title}</h3>${M.gameKey()}
+    <h3>Answer key: assessment</h3><ol>${akey}</ol>
+    <h3>Stars</h3><p>One star each for: story questions (2 of 3 right on the first try), game (${M.game.starRule}), assessment (both right on the first try). Progress is saved only in this browser.</p>
+  `);
+}
+
+/* ===================== router ===================== */
+function route(){
+  const hs = location.hash.replace('#','');
+  const m = hs.match(/^module-(\d+)$/);
+  if(m){
+    const id = +m[1]; const meta = MODULES.find(x=>x.id===id);
+    if(meta && CONTENT[id] && (status(meta)==='open' || status(meta)==='done')){ renderModule(id); return; }
+  }
+  renderHome(); window.scrollTo({top:0});
+}
+addEventListener('hashchange', route);
+drawTop(); route();
+</script>
+</body>
+</html>
